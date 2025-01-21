@@ -5,7 +5,7 @@ COPY / /
 
 # Set environment variables
 ENV MODEL_NAME=saved_cgan
-ENV MODEL_BASE_PATH=/Model\ Development/DeepLearningModel
+ENV MODEL_BASE_PATH=/ModelDevelopment/DeepLearningModel
 
 # Expose REST and gRPC ports
 EXPOSE 8500
