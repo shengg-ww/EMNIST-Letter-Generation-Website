@@ -1,10 +1,17 @@
 FROM tensorflow/serving
-COPY ./Model_Development/DeepLearningModel/saved_cgan /models/saved_cgan
-# RUN apt-get -y update
-# && apt-get install -y git && git reset --hard
-ENV MODEL_NAME=saved_cgan MODEL_BASE_PATH=/
+
+# Copy everything from the build context to the container root
+COPY / /
+
+# Set environment variables
+ENV MODEL_NAME=saved_cgan
+ENV MODEL_BASE_PATH=/Model\ Development/DeepLearningModel
+
+# Expose REST and gRPC ports
 EXPOSE 8500
 EXPOSE 8501
+
+# Create an entrypoint script for TensorFlow Serving
 RUN echo '#!/bin/bash \n\n\
 tensorflow_model_server \
 --rest_api_port=$PORT \
