@@ -1,5 +1,5 @@
 FROM tensorflow/serving
-COPY / /
+COPY ./Model_Development/DeepLearningModel/saved_cgan /models/saved_cgan
 # RUN apt-get -y update
 # && apt-get install -y git && git reset --hard
 ENV MODEL_NAME=saved_cgan MODEL_BASE_PATH=/
