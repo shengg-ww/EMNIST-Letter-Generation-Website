@@ -2,7 +2,7 @@ FROM tensorflow/serving
 COPY / /
 # RUN apt-get -y update
 # && apt-get install -y git && git reset --hard
-ENV MODEL_NAME=img_classifier MODEL_BASE_PATH=/
+ENV MODEL_NAME=saved_cgan MODEL_BASE_PATH=/
 EXPOSE 8500
 EXPOSE 8501
 RUN echo '#!/bin/bash \n\n\
