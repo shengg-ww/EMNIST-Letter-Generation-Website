@@ -1,0 +1,51 @@
+<!-- Inherits from layout.html -->
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid vh-100 d-flex flex-column">
+    <div class="row flex-grow-1 h-100">
+        <!-- Left Section (Description) -->
+<div class="col text-center d-flex flex-column align-items-center justify-content-center">
+    <h1 class="home-title">Image Generation</h1>
+    <p class="home-subtitle typing-text" id="typing-title">
+    </p>
+    <!-- Get Started Button -->
+    <div>
+        <button class="btn btn-primary btn-lg" onclick="location.href='/form'">Get Started</button>
+    </div>
+</div>
+
+    
+    </div>
+</div>
+<script>
+    function typeWriter(element, text, speed = 75, isUntyping = false) {
+        let i = isUntyping ? text.length : 0;
+        
+        function type() {
+            if (isUntyping ? i > 0 : i < text.length) {
+                if (isUntyping) {
+                    element.innerHTML = text.substring(0, i-1);
+                    i--;
+                } else {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                }
+                setTimeout(type, speed);
+            } else {
+                // Switch between typing and untyping
+                setTimeout(() => {
+                    typeWriter(element, text, speed, !isUntyping);
+                }, 2000); // Pause before switching
+            }
+        }
+        
+        type();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const titleElement = document.getElementById('typing-title');
+        typeWriter(titleElement, "Generate pictures using our AI-powered prediction system");
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-transparent">
+    <div class="container">
+        <!-- Navbar Brand -->
+        {% if request.endpoint != 'forget_password' %}
+            <a class="navbar-brand" href="/home">SW Insurance.Co</a>
+        {% endif %}
+
+        <!-- Toggler Button for Collapsible Navbar -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Collapsible Navbar Content -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                {% if request.endpoint == 'forget_password' %}
+                    <!-- Simplified Navbar for Forget Password Page -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Log In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/register">Register</a>
+                    </li>
+                {% else %}
+                    <!-- Full Navbar for Other Pages -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/form">Form</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/history">History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Log Out</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

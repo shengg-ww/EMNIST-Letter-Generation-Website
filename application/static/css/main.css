@@ -1,0 +1,203 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+body {
+    background: linear-gradient(
+      135deg,
+      #000000,
+      #333333,
+      #0c0c0c,
+      #262626,
+      #101010
+    );
+    background-size: 400% 400%;
+    animation: sporadicWave 15s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite alternate;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  @keyframes sporadicWave {
+    0% { 
+      background-position: 0% 50%;
+      filter: contrast(80%) brightness(90%);
+    }
+    25% { 
+      background-position: 50% 75%;
+      filter: contrast(100%) brightness(110%);
+    }
+    50% { 
+      background-position: 100% 50%;
+      filter: contrast(120%) brightness(80%);
+    }
+    75% { 
+      background-position: 50% 25%;
+      filter: contrast(90%) brightness(100%);
+    }
+    100% { 
+      background-position: 0% 50%;
+      filter: contrast(85%) brightness(95%);
+    }
+  }
+  
+  /* Optional subtle texture */
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,0.02),
+        rgba(255,255,255,0.02) 1px,
+        transparent 2px
+      );
+    opacity: 0.1;
+    pointer-events: none;
+  }
+  
+.home-subtitle, .home-title, .right-section,.btn-primary{
+    animation: fadeIn 2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.home-title{
+    color:white;
+    font-weight: bold;
+    font-size: 4.5rem
+}
+.home-subtitle{
+color:#cdcdcd;
+font-size:1.5rem;
+margin-top:30px;
+}
+
+
+.navbar-brand {
+    color:white;
+    text-shadow: 4px 4px 4px rgb(234, 86, 22); /* Red shadow with offsets and blur */
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba%280,0,0,0.5%29' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    width: 30px;
+    height: 30px;
+}
+
+.btn-primary {
+    background: transparent;
+    border: 5px solid #ffffff; /* Blue border */
+    margin-top: 50px;
+    position:relative;
+    color: #ffffff; /* Blue text */
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    transition: all 0.3s ease-in-out;
+}
+.btn-primary:hover {
+    background: #f8f8f8; /* Solid blue on hover */
+    border: 5px solid #ffffff; /* Blue border */
+
+    color: black;
+    transform: scale(1.05); /* Slight hover effect */
+}
+
+
+.navbar .nav-link {
+    color: #fff;
+    border: 2px solid white;
+    border-radius: 50px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    margin:10px;
+}
+
+.navbar .nav-link:hover {
+    background-color: #fff;
+    color: #000;
+    text-decoration: none;
+}
+
+
+.fixed-bottom {
+
+    color: white;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 576px) {
+    .home-title {
+        font-size: 1.8rem; /* Adjust the title size for smaller screens */
+    }
+
+    .home-subtitle {
+        font-size: 0.9rem; /* Smaller font size for subtitles on phones */
+    }
+
+    .btn {
+        font-size: 1rem; /* Adjust button size for smaller screens */
+    }
+}
+
+
+.flash-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f8d7da; /* Light red for error */
+    color: #721c24; /* Dark red text */
+    padding: 20px;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000; /* Ensure it appears on top */
+    text-align: center;
+    max-width: 400px;
+  }
+  
+  .flash-message.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+  
+  .flash-message.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+  }
+  
+  .dismiss-btn {
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  
+  .dismiss-btn:hover {
+    background-color: #0056b3;
+  }
+  
+
+  /* Typing Effect */
+.typing-text::after {
+    content: '|';
+    animation: blink 0.7s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
