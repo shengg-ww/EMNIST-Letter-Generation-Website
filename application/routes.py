@@ -118,10 +118,20 @@ def register():
     return render_template('register.html', title="Register", css_file='css/main.css', form=form, current_page='register')
 
 
+@app.route('/logout')
+@login_required
+def logout():
+    """Logout route."""
+    logout_user()  # Log the user out
+    flash("You have been logged out.", "info")
+    return redirect(url_for('index'))
+
 @app.route('/form', methods=['GET', 'POST'])
 @login_required
 def form():
-    return render_template("form.html",title='Form', form=form, css_file='css/main.css', current_page="form")
+    # Get the username of the logged-in user
+    username = current_user.username
+    return render_template("form.html",title='Form', form=form, css_file='css/main.css', current_page="form", username=username)
 
 
 #Handles http://127.0.0.1:5000/predict

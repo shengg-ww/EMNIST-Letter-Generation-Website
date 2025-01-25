@@ -1,65 +1,105 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 body {
-    background: linear-gradient(
-      135deg,
-      #000000,
-      #333333,
-      #0c0c0c,
-      #262626,
-      #101010
-    );
-    background-size: 400% 400%;
-    animation: sporadicWave 15s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite alternate;
+    background:black;
     font-family: 'Inter', sans-serif;
     height: 100%;
+    overflow: hidden;
   }
   
-  @keyframes sporadicWave {
-    0% { 
-      background-position: 0% 50%;
-      filter: contrast(80%) brightness(90%);
-    }
-    25% { 
-      background-position: 50% 75%;
-      filter: contrast(100%) brightness(110%);
-    }
-    50% { 
-      background-position: 100% 50%;
-      filter: contrast(120%) brightness(80%);
-    }
-    75% { 
-      background-position: 50% 25%;
-      filter: contrast(90%) brightness(100%);
-    }
-    100% { 
-      background-position: 0% 50%;
-      filter: contrast(85%) brightness(95%);
-    }
-  }
-  
-  /* Optional subtle texture */
-  body::after {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-      repeating-linear-gradient(
-        0deg,
-        rgba(255,255,255,0.02),
-        rgba(255,255,255,0.02) 1px,
-        transparent 2px
-      );
-    opacity: 0.1;
-    pointer-events: none;
-  }
-  
-.home-subtitle, .home-title, .right-section,.btn-primary{
-    animation: fadeIn 2s ease-in-out;
+
+  .animated-blob {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(
+        45deg, 
+        #7d22a4,
+        #3a3690, 
+        #c59678,
+        #FF4500 
+    );
+    box-shadow: 0 5px 5px rgba(78, 77, 77, 0.8); /* Adds a glowing shadow only when hovered */
+    background-size: 300% 300%; /* Makes the gradient larger than the blob */
+    position: relative;
+    bottom:80px;
+    animation: blob-animation 15s infinite ease-in-out, gradient-animation 5s infinite linear;
+    transition: transform 0.4s ease, box-shadow 0.4s ease; 
 }
 
+.animated-blob:hover {
+  transform: rotate(15deg);
+
+  box-shadow: 0 15px 30px rgba(255, 69, 0, 0.5); /* Adds a glowing shadow only when hovered */
+}
+.start-button{
+  background: transparent;
+  color:white;
+  border-radius: 30px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.75); /* Focus glow */
+  border: 5px solid #ffffff; /* Blue border */
+  margin-top: 50px;
+  position:relative;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  transition: all 0.3s ease-in-out;
+}
+
+@keyframes blob-animation {
+    0%, 100% {
+        border-radius: 50%;
+        transform: translate(0, 0) scale(1);
+    }
+    25% {
+        border-radius: 60% 40% 70% 30% / 30% 70% 40% 60%;
+        transform: translate(10px, -20px) scale(1.1);
+    }
+    50% {
+        border-radius: 40% 60% 30% 70% / 60% 30% 70% 40%;
+        transform: translate(-15px, 10px) scale(1.2);
+    }
+    75% {
+        border-radius: 70% 30% 50% 50% / 50% 50% 30% 70%;
+        transform: translate(20px, -10px) scale(1.1);
+    }
+}
+
+/* Gradient Animation */
+@keyframes gradient-animation {
+  0% {
+      background-position: 0% 50%; /* Start at the left */
+  }
+  50% {
+      background-position: 100% 50%; /* Shift to the right */
+  }
+  100% {
+      background-position: 0% 50%; /* Return to the start */
+  }
+}
+
+@media (max-width: 768px) {
+    .home-title {
+        font-size: 2.5rem;
+    }
+
+    .animated-blob {
+        width: 200px;
+        height: 200px;
+    }
+}
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .home-title {
+        font-size: 2.5rem;
+    }
+
+    .animated-circle {
+        width: 200px;
+        height: 200px;
+    }
+}
+.home-subtitle, .home-title,.start-button{
+  animation: fadeIn 2s ease-in-out;
+}
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -69,15 +109,24 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
+}  
+.home-subtitle, .home-title{
+    position: relative;
+    bottom:80px;
+    left:50px;
 }
+
+
 
 .home-title{
     color:white;
     font-weight: bold;
     font-size: 4.5rem
 }
+
 .home-subtitle{
 color:#cdcdcd;
+padding:10px;
 font-size:1.5rem;
 margin-top:30px;
 }
@@ -85,21 +134,13 @@ margin-top:30px;
 
 .navbar-brand {
     color:white;
+    padding:10px;
     text-shadow: 4px 4px 4px rgb(234, 86, 22); /* Red shadow with offsets and blur */
 }
 
 
-.btn-primary {
-    background: transparent;
-    border: 5px solid #ffffff; /* Blue border */
-    margin-top: 50px;
-    position:relative;
-    color: #ffffff; /* Blue text */
-    padding: 15px 30px;
-    font-size: 1.2rem;
-    transition: all 0.3s ease-in-out;
-}
-.btn-primary:hover {
+
+.start-button:hover {
     background: #f8f8f8; /* Solid blue on hover */
     border: 5px solid #ffffff; /* Blue border */
 
@@ -179,20 +220,7 @@ margin-top:30px;
   }
   
 
-  /* Typing Effect */
-.typing-text::after {
-    content: '|';
-    animation: blink 0.7s infinite;
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-}
-
 .fixed-bottom{
-  position:relative;
-  bottom:-50px;
   color:rgb(160, 160, 160)
 }
 
@@ -201,25 +229,59 @@ margin-top:30px;
   padding: 40px;
   max-width: 600px;
   position: relative;
-  top:30px;
+  top: 40px;
   margin: 0 auto; /* Center align */
   background: rgba(0, 0, 0, 0.9);
   border-radius: 30px;
   box-shadow: 0 4px 30px rgba(139, 139, 139, 0.5);
   backdrop-filter: blur(10px);
-  animation: fadeIn 2s ease-in-out;
+  animation: fadeIn 2s ease-in-out, boxShadowAnimation 3s infinite alternate ease-in-out;
 }
 
+/* Box Shadow Animation */
+@keyframes boxShadowAnimation {
+  0% {
+    box-shadow: 0 4px 30px rgba(180, 139, 106, 0.7); /* Original shadow */
+  }
+  50% {
+    box-shadow: 0 6px 40px rgba(129, 70, 70, 0.7); /* Larger, glowing shadow */
+  }
+  100% {
+    box-shadow: 0 8px 50px rgba(74, 45, 106, 0.7); /* Subtle larger shadow */
+  }
+}
 
+/* Optional Fade-In Animation */
 @keyframes fadeIn {
   from {
-      opacity: 0;
-      transform: translateY(20px);
+    opacity: 0;
+    transform: translateY(20px);
   }
   to {
-      opacity: 1;
-      transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0);
   }
+}
+
+.user-button{
+  background: transparent;
+  color:white;
+  border-radius: 30px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.75); /* Focus glow */
+  border: 5px solid #ffffff; /* Blue border */
+  margin-top: 10px;
+  position:relative;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.user-button:hover {
+  background: #f8f8f8; /* Solid blue on hover */
+  border: 5px solid #ffffff; /* Blue border */
+  color: black;
+  transform: scale(1.02); /* Slight hover effect */
 }
 
 .form-error-message{
@@ -270,25 +332,7 @@ margin-top:30px;
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
 }
 
-/* Buttons */
-.login-button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 20px;;
-  background-color: #007bff;
-  border: none;
-  color: white;
-  font-weight: bold;
-  text-transform: uppercase;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
 
-/* Button Hover State */
-.login-button:hover {
-  background-color: #0056b3;
-}
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -316,9 +360,4 @@ margin-top:30px;
     font-size: 1rem
   }
 }
-
-.button{
-  border-radius: 20px;
-}
-
 

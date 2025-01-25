@@ -4,32 +4,36 @@
 {% block content %}
 <div class="container-fluid vh-100 d-flex flex-column">
     <div class="row flex-grow-1 h-100">
-        <!-- Left Section (Description) -->
-        <div class="col-lg-6 col-md-12 col-sm-12 d-flex flex-column">
-            <h1 class="home-title">Car Insurance <br> Claim Prediction</h1>
-            <p class="home-subtitle">
-                Take the guesswork out of claims with our advanced <strong>AI-powered prediction system.</strong>
-                <br><br> Simply provide a few key details, like your gender, income, and policy preferences, and unlock <strong>accurate</strong>, <strong>personalized</strong> insurance claims tailored to your needs. 
-              
-                
-            </p>
-            <!-- Get Started Button -->
-            <div class="d-flex justify-content-center">
-                <button class="btn btn-primary btn-lg" onclick="location.href='/form'">Get Started</button>
-            </div>
-        </div>
-
-        <!-- Right Section (Video) -->
-        <div class="col-lg-6 col-md-12 col-sm-12">
-            <div class="video-wrapper ">
-                <video class="video-fit" autoplay muted loop playsinline>
-                    <source src="../static/images/16743471-uhd_2160_3840_30fps.mp4" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            </div>
+        <div class="col-sm-12 col-md-6 d-flex flex-column align-items-start justify-content-center px-5">
+            <h1 class="home-title" id="typing-title"></h1>
+            <p class="home-subtitle" id="typing-subtitle"></p>
         </div>
     </div>
 </div>
 
+<script>
+    function typeWriter(element, text, speed = 75) {
+    let i = 0; // Start from the first character
+    
+    function type() {
+        if (i < text.length) {
+            element.innerHTML += text.charAt(i); // Add the next character
+            i++;
+            setTimeout(type, speed); // Continue typing
+        }
+    }
+    
+    type(); // Start the typing process
+}
 
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const titleElement = document.getElementById('typing-title');
+        typeWriter(titleElement, "Welcome,  {{ username }}");
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+        const SubtitleElement = document.getElementById('typing-subtitle');
+        typeWriter(SubtitleElement, "How can I help you today?");
+    });
+</script>
 {% endblock %}
