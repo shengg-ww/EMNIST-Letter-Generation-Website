@@ -33,9 +33,8 @@ url = 'https://ca2-daaa2b02-2309123-limshengwei.onrender.com/v1/models/saved_cga
 #Handles http://127.0.0.1:5000/
 @app.route('/')
 @app.route('/index')
-@app.route('/home')
 def index():
-    return render_template('index.html', title="Home", css_file='css/main.css', current_page="index")
+    return render_template('index.html', title="SW Labs", css_file='css/main.css', current_page="index")
 
 
 # <---------------------------------------------- FLASK-LOGIN --------------------------------------------<
@@ -126,12 +125,12 @@ def logout():
     flash("You have been logged out.", "info")
     return redirect(url_for('index'))
 
-@app.route('/form', methods=['GET', 'POST'])
+@app.route('/home')
 @login_required
 def form():
     # Get the username of the logged-in user
     username = current_user.username
-    return render_template("form.html",title='Form', form=form, css_file='css/main.css', current_page="form", username=username)
+    return render_template("home.html",title='Home', css_file='css/main.css', current_page="home", username=username)
 
 
 #Handles http://127.0.0.1:5000/predict

@@ -23,13 +23,26 @@ body {
     bottom:80px;
     animation: blob-animation 15s infinite ease-in-out, gradient-animation 5s infinite linear;
     transition: transform 0.4s ease, box-shadow 0.4s ease; 
+
 }
 
-.animated-blob:hover {
-  transform: rotate(15deg);
 
-  box-shadow: 0 15px 30px rgba(255, 69, 0, 0.5); /* Adds a glowing shadow only when hovered */
+
+.animated-blob2 {
+  position: absolute; /* Position it relative to the nearest positioned ancestor */
+  width: 600px;
+  height: 600px;
+  top:120px;
+  background: black;
+  box-shadow: 0 15px 30px rgba(240, 121, 121, 0.8); /* Adds a glowing shadow */
+  border-radius: 100%; /* Make it circular */
+  z-index: -1; /* Behind the text */
+  animation: blob-animation 25s infinite ease-in-out, gradient-animation 5s infinite linear;
+  transition: transform 0.4s ease, box-shadow 0.4s ease; 
 }
+
+
+
 .start-button{
   background: transparent;
   color:white;
@@ -97,7 +110,7 @@ body {
         height: 200px;
     }
 }
-.home-subtitle, .home-title,.start-button{
+.home-subtitle, .home-title,.start-button,.generate-button,.history-button{
   animation: fadeIn 2s ease-in-out;
 }
 @keyframes fadeIn {
@@ -229,7 +242,7 @@ margin-top:30px;
   padding: 40px;
   max-width: 600px;
   position: relative;
-  top: 40px;
+  top: 70px;
   margin: 0 auto; /* Center align */
   background: rgba(0, 0, 0, 0.9);
   border-radius: 30px;
@@ -262,6 +275,25 @@ margin-top:30px;
     transform: translateY(0);
   }
 }
+.history-button,.generate-button{
+  background: transparent;
+  color:white;
+  margin-left: 50px;
+  border-radius: 30px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.75); /* Focus glow */
+  border: 5px solid #ffffff; /* Blue border */
+  position:relative;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  transition: all 0.3s ease-in-out;
+}
+.history-button:hover,.generate-button:hover {
+  background: #f8f8f8; /* Solid blue on hover */
+  border: 5px solid #ffffff; /* Blue border */
+  color: black;
+  transform: scale(1.02); /* Slight hover effect */
+} 
 
 .user-button{
   background: transparent;
@@ -283,7 +315,11 @@ margin-top:30px;
   color: black;
   transform: scale(1.02); /* Slight hover effect */
 }
-
+.typing-text {
+  min-height: 1.5em; /* Adjust based on font size */
+  display: inline-block; /* Ensures the height applies correctly */
+  overflow: hidden; /* Prevent layout issues during animation */
+}
 .form-error-message{
   color: #d9534f; /* Bootstrap Danger Red */
   font-size: 14px;
