@@ -1,0 +1,46 @@
+<!-- Inherits from layout.html -->
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid vh-100 d-flex flex-column">
+    <div class="row flex-grow-1 h-100">
+        <div class="col-sm-12 col-md-6 d-flex flex-column align-items-start justify-content-center px-5">
+            <h1 class="home-title" id="typing-title"></h1>
+            <p class="home-subtitle" id="typing-subtitle"></p> 
+            <!-- Buttons Section -->
+            <div class="mt-4">
+                <button class="btn generate-button" id="start-generating-btn "onclick="location.href='/generate'">Start Generating</button>
+                <button class="btn history-button ms-5" id="view-history-btn " onclick="location.href='/history'">View My History</button>
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-6 d-flex flex-column align-items-start justify-content-center px-5">
+             <div class="animated-blob2"></div>
+        </div>
+    </div>
+</div>
+<script>
+    function typeWriter(element, text, speed = 75) {
+    let i = 0; // Start from the first character
+    
+    function type() {
+        if (i < text.length) {
+            element.innerHTML += text.charAt(i); // Add the next character
+            i++;
+            setTimeout(type, speed); // Continue typing
+        }
+    }
+    
+    type(); // Start the typing process
+}
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const titleElement = document.getElementById('typing-title');
+        typeWriter(titleElement, "Welcome,  {{ username }}");
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+        const SubtitleElement = document.getElementById('typing-subtitle');
+        typeWriter(SubtitleElement, "How can I help you today?");
+    });
+</script>
+{% endblock %}

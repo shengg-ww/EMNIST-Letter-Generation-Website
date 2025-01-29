@@ -1,0 +1,123 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
+    <!-- Title Section -->
+    <div class="row w-100">
+        <div class="col-12 text-center py-4">
+            <h1 class="display-5 fw-bold" style="color: white;">Generate EMNIST Letters</h1>
+            <p class="text-muted">Type a single letter (A-Z) to generate a handwritten EMNIST image in real-time.</p>
+        </div>
+    </div>
+
+    <!-- Chat UI Section -->
+    <div class="row flex-grow-1 w-100 d-flex justify-content-center align-items-center">
+  
+            <!-- Chatbox -->
+            <div class="chatbox p-4 rounded shadow-sm w-100">
+                <!-- Messages -->
+                <div class="messages mb-4 p-3 text-center" id="chat-messages" style="height: 300px; overflow-y: auto;">
+                    <h2 class="text-white image-title" id="prompt-display" ></h2>
+                    <img
+                        class="gen-image"
+                        id="generated-image"
+                        src=""
+                        alt="Generated EMNIST Image"
+                        style="border: 1px solid #ddd; border-radius: 8px; max-width: 50%; margin-top: 20px; display: none;"
+                    />
+                </div>
+                <!-- Save Image Button -->
+                <button id="save-button" class="btn btn-success mt-3" style="display: none; margin-bottom: 20px;">Save Image</button>
+                <!-- Input Section -->
+                <form id="input-form" class="d-flex">
+                    <input
+                        type="text"
+                        name="prompt"
+                        id="chat-input"
+                        class="form-control me-3"
+                        placeholder="Enter a letter (A-Z)"
+                        required
+                        maxlength="1"
+                        style="height: 60px; font-size: 1.2rem; text-transform: uppercase; text-align: center;"
+                    />
+                
+
+                
+                </form>
+            </div>
+
+            <div class="animated-blob3"></div>
+    
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const inputField = document.getElementById("chat-input");
+    const promptDisplay = document.getElementById("prompt-display");
+    const imageDisplay = document.getElementById("generated-image");
+    const saveButton = document.getElementById("save-button"); //
+
+
+    let timeout = null;
+
+    // Restrict input to only one letter (A-Z)
+    inputField.addEventListener("input", function () {
+        let letter = inputField.value.toUpperCase(); // Convert to uppercase
+        
+        if (!/^[A-Z]$/.test(letter)) {
+            inputField.value = ""; // Clear invalid input
+            return;
+        }
+
+        inputField.value = letter; // Ensure only uppercase letter is kept
+
+        clearTimeout(timeout);
+        timeout = setTimeout(() => sendRequest(letter), 300); // Debounce delay
+    });
+
+    // Function to send request to the server
+    async function sendRequest(letter) {
+        try {
+            const response = await fetch("/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: letter })
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.image) {
+                promptDisplay.style.display = "block";
+                promptDisplay.textContent = `Generated Image for: "${letter}"`;
+                imageDisplay.src = `data:image/png;base64,${data.image}`;
+                imageDisplay.style.display = "block";
+                saveButton.style.display = "block"; //
+            } else {
+                alert("Failed to generate the image. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred while generating the image.");
+        }
+    }
+
+    // Add event listener for button click (manual trigger)
+    generateButton.addEventListener("click", function () {
+        if (inputField.value) {
+            sendRequest(inputField.value);
+        }
+    });
+    // Function to save the generated image
+    saveButton.addEventListener("click", function () {
+        const link = document.createElement("a");
+        link.href = imageDisplay.src;
+        link.download = "generated_emnist.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+});
+</script>
+
+{% endblock %}
