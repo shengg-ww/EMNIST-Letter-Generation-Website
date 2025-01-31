@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash
 
 #create the Flask app
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 # load configuration from config.cfg
 app.config.from_pyfile('config.cfg')
 

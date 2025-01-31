@@ -1,46 +1,33 @@
-<!-- Inherits from layout.html -->
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container-fluid vh-100 d-flex flex-column">
-    <div class="row flex-grow-1 h-100">
-        <div class="col-sm-12 col-md-6 d-flex flex-column align-items-start justify-content-center px-5">
-            <h1 class="home-title" id="typing-title"></h1>
-            <p class="home-subtitle" id="typing-subtitle"></p> 
-            <!-- Buttons Section -->
-            <div class="mt-4">
-                <button class="btn generate-button" id="start-generating-btn "onclick="location.href='/generate'">Start Generating</button>
-                <button class="btn history-button ms-5" id="view-history-btn " onclick="location.href='/history'">View My History</button>
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Prediction History for {{ username }}</h1>
+
+    {% if entries %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for entry in entries %}
+        <div class="col">
+            <div class="card shadow-sm">
+                <!-- Display the image -->
+                <img src="data:image/png;base64,{{ entry.image_data }}" class="card-img-top" alt="Generated Letter {{ entry.letter }}">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Predicted Letter: {{ entry.letter }}</h5>
+                    <p class="card-text text-muted">Predicted on: {{ entry.timestamp }}</p>
+                    <form action="{{ url_for('remove_entry', entry_id=entry.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger" title="Delete">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
-        <div class="col-sm-12 col-md-6 d-flex flex-column align-items-start justify-content-center px-5">
-             <div class="animated-blob2"></div>
-        </div>
+        {% endfor %}
     </div>
+    {% else %}
+    <div class="text-center mt-5">
+        <h2>No prediction history available</h2>
+    </div>
+    {% endif %}
 </div>
-<script>
-    function typeWriter(element, text, speed = 75) {
-    let i = 0; // Start from the first character
-    
-    function type() {
-        if (i < text.length) {
-            element.innerHTML += text.charAt(i); // Add the next character
-            i++;
-            setTimeout(type, speed); // Continue typing
-        }
-    }
-    
-    type(); // Start the typing process
-}
-
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const titleElement = document.getElementById('typing-title');
-        typeWriter(titleElement, "Welcome,  {{ username }}");
-    });
-    document.addEventListener('DOMContentLoaded', () => {
-        const SubtitleElement = document.getElementById('typing-subtitle');
-        typeWriter(SubtitleElement, "How can I help you today?");
-    });
-</script>
 {% endblock %}

@@ -247,3 +247,8 @@ body {
       transform: translateY(0);
     }
   }
+
+  .fixed-bottom{
+    color:rgb(160, 160, 160)
+  }
+  

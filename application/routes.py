@@ -13,7 +13,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import re
 import base64
 from io import BytesIO
-# from tensorflow.keras.datasets.mnist import load_data
+from datetime import datetime
 import json
 import numpy as np
 import requests
@@ -21,12 +21,8 @@ import pathlib, os
 import json
 import tensorflow as tf
 import requests
-import io  # ✅ Fix for handling image conversion
-import matplotlib.pyplot as plt  # ✅ Fix for displaying images
-
-
-# URL of the server-hosted CGAN model
-GAN_SERVER_URL = 'https://ca2-daaa2b02-2309123-limshengwei.onrender.com/v1/models/saved_cgan:predict'
+import io  # 
+import matplotlib.pyplot as plt  # 
 
 
 
@@ -135,65 +131,134 @@ def form():
     return render_template("home.html",title='Home', css_file='css/main.css', current_page="home", username=username)
 # ✅ Load the CGAN model locally
 
-saved_model_path = "ModelDev/saved_cgan/1737551983"  # Update the path
-loaded_model = tf.saved_model.load(saved_model_path)
 
-@app.route('/generate', methods=['GET', 'POST'])
+
+
+@app.route('/generate', methods=['GET'])
+@login_required
 @cross_origin(origin='localhost', headers=['Content-Type', 'Authorization'])
 def generate():
     """
-    Handles both UI rendering (GET) and image generation via the locally saved CGAN model.
+    Renders the UI for generating images.
     """
-    if request.method == 'GET':
-        return render_template('generate.html', css_file='css/main.css', current_page='generate')
+    return render_template('generate.html', css_file='css/main.css', current_page='generate')
 
-    if request.method == 'POST':
-        try:
-            # ✅ Parse input JSON from frontend
-            data = request.get_json()
-            if not data or 'prompt' not in data:
-                return jsonify({"success": False, "error": "Invalid input"}), 400
+# TensorFlow Serving API URL
+GAN_SERVER_URL = 'https://ca2-daaa2b02-2309123-limshengwei.onrender.com/v1/models/saved_cgan:predict'
+@app.route('/proxy_generate', methods=['GET','POST'])
+def proxy_generate():
+    try:
+        # Parse input JSON from frontend
+        data = request.get_json()
+        if not data or 'prompt' not in data:
+            return jsonify({"success": False, "error": "Invalid input"}), 400
 
-            # ✅ Validate and preprocess input letter
-            prompt = data['prompt'].strip().upper()
-            if len(prompt) != 1 or not prompt.isalpha():
-                return jsonify({"success": False, "error": "Input must be a single letter (A-Z)."}), 400
+        # Validate input letter
+        prompt = data['prompt'].strip().upper()
+        if len(prompt) != 1 or not prompt.isalpha():
+            return jsonify({"success": False, "error": "Input must be a single letter (A-Z)."}), 400
+        # ✅ Convert letter to class index based on your model's convention
+        if prompt == "Z":
+                class_index =[0.0]
+        else:
+                class_index =[float(ord(prompt) - ord('A')+1)] 
 
-            # ✅ Convert letter to class index based on your model's convention
-            if prompt == "Z":
-                class_index = np.array([[0]], dtype=np.float32).reshape(1, 1)
-            else:
-                class_index = np.array([[float(ord(prompt) - ord('A') + 1)]], dtype=np.float32).reshape(1, 1)
+        z_input = np.random.normal(0, 1, 100).tolist()  # Shape: (100,)
 
+        # Construct payload for TensorFlow Serving
+        payload = {
+            "signature_name": "serving_default",
+            "instances": [{
+                "input_13": z_input,  # Noise input
+                "input_12": class_index  # Class index
+            }]
+        }
 
-            # ✅ Generate a latent vector (Shape: [1, 100])
-            z_input = np.random.randn(1, 100).astype(np.float32).reshape(1, 100)
+        # Send request to TensorFlow Serving
+        response = requests.post(GAN_SERVER_URL, json=payload)
+        response.raise_for_status()  # Raise error for bad responses
+        result = response.json()
 
-            # ✅ Run inference using the locally loaded model
-            infer = loaded_model.signatures["serving_default"]
-            result = infer(
-                input_13=tf.convert_to_tensor(z_input), 
-                input_12=tf.convert_to_tensor(class_index)
-            )
+        if "predictions" not in result or not result["predictions"]:
+            return jsonify({"success": False, "error": "Invalid response from TensorFlow Serving"}), 500
 
-            # ✅ Extract the generated image tensor
-            generated_image = result["conv2d_12"].numpy().reshape(28, 28)  # Reshape to 28x28
+        # Extract generated image tensor and reshape
+        generated_image = np.array(result["predictions"][0]).reshape(28, 28)
 
-            # ✅ Convert image to Base64 for frontend display
-            img_bytes = io.BytesIO()
-            plt.imsave(img_bytes, generated_image, cmap="gray_r", format='png')
-            img_bytes.seek(0)
-            base64_image = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
+        # Convert image to Base64 for frontend display
+        img_bytes = io.BytesIO()
+        plt.imsave(img_bytes, generated_image, cmap="gray_r", format='png')
+        img_bytes.seek(0)
+        base64_image = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
 
-            # ✅ Return Base64 encoded image
-            return jsonify({"success": True, "image": base64_image})
+        # Return Base64 encoded image
+        return jsonify({"success": True, "image": base64_image})
 
-        except Exception as e:
-            # Log the error for debugging
-            print(f"🔥 Exception occurred: {e}")
-            return jsonify({"success": False, "error": str(e)}), 500
+    except requests.exceptions.RequestException as e:
+        return jsonify({"success": False, "error": f"TensorFlow Serving error: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+        
+@app.route("/save", methods=["POST"])
+@login_required  # Ensure the user is logged in
+def save_letter():
+    data = request.json
+    letter = data.get("letter", "").strip().upper()  # Strip spaces and enforce uppercase
+    image_base64 = data.get("image")  # Base64 encoded image from frontend
+
+     # Remove unnecessary surrounding quotes if they exist
+    if letter.startswith('"') and letter.endswith('"'):
+        letter = letter[1:-1]
+
+    if not letter or not letter.isalpha() or len(letter) != 1:
+        flash("Invalid input! Please enter a single letter.", "danger")
+        return jsonify({"success": False, "error": "Invalid input"}), 400
+
+    # Get the logged-in user ID
+    user_id = current_user.id  
+
+    # Ensure user_id is not None
+    if not user_id:
+        flash("User not authenticated.", "danger")
+        return jsonify({"success": False, "error": "User not authenticated"}), 403  # Forbidden
+    
+    if not image_base64:
+        return jsonify({"success": False, "error": "No image data provided"}), 400
+
+    # Save new entry
+    new_entry = Entry(user_id=user_id, letter=letter,image_data=image_base64,  timestamp=datetime.utcnow())
+    db.session.add(new_entry)
+    db.session.commit()
+
+    flash(f"Letter '{letter}' saved successfully!", "success")
+    return jsonify({"success": True, "message": "Saved successfully!"}), 200
+    
+
 @app.route("/history", methods=['GET','POST'])
 @login_required
 def history():
     entries = Entry.query.filter_by(user_id=current_user.id).all()
-    return render_template('history.html', title='History', css_file='css/main.css', current_page='history', entries=entries)
+    # Get the username of the logged-in user
+    username = current_user.username
+    return render_template('history.html', title='History', css_file='css/index.css', current_page='history', entries=entries, username=username)
+
+# route for removing entries
+@app.route('/remove/<int:entry_id>', methods=['POST'])
+@login_required
+def remove_entry(entry_id):
+    entry = Entry.query.get_or_404(entry_id)
+    print(entry)
+    if entry.user_id != current_user.id:
+        flash("You don't have permission to delete this record.", "danger")
+        return redirect(url_for('history'))
+
+    try:
+        db.session.delete(entry)
+        db.session.commit()
+        flash(f"Entry with ID {entry.id} deleted successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting entry: {str(e)}", "danger")
+
+    return redirect(url_for('history'))

@@ -7,27 +7,6 @@ body {
   }
   
 
-  .animated-blob {
-    width: 400px;
-    height: 400px;
-    background: linear-gradient(
-        45deg, 
-        #7d22a4,
-        #3a3690, 
-        #c59678,
-        #FF4500 
-    );
-    box-shadow: 0 5px 5px rgba(78, 77, 77, 0.8); /* Adds a glowing shadow only when hovered */
-    background-size: 300% 300%; /* Makes the gradient larger than the blob */
-    position: relative;
-    bottom:80px;
-    animation: blob-animation 15s infinite ease-in-out, gradient-animation 5s infinite linear;
-    transition: transform 0.4s ease, box-shadow 0.4s ease; 
-
-}
-
-
-
 .animated-blob2 {
   position: absolute; /* Position it relative to the nearest positioned ancestor */
   width: 600px;
@@ -45,7 +24,7 @@ body {
   position: absolute; /* Position it relative to the nearest positioned ancestor */
   width: 900px;
   height: 900px;
-  top:120px;
+  top:80px;
   background: black;
   box-shadow: 0 15px 30px rgba(240, 121, 121, 0.8); /* Adds a glowing shadow */
   border-radius: 100%; /* Make it circular */
@@ -56,19 +35,6 @@ body {
 
 
 
-.start-button{
-  background: transparent;
-  color:white;
-  border-radius: 30px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.75); /* Focus glow */
-  border: 5px solid #ffffff; /* Blue border */
-  margin-top: 50px;
-  position:relative;
-  padding: 15px 30px;
-  font-size: 1.2rem;
-  transition: all 0.3s ease-in-out;
-}
 
 @keyframes blob-animation {
     0%, 100% {
@@ -102,30 +68,6 @@ body {
   }
 }
 
-@media (max-width: 768px) {
-    .home-title {
-        font-size: 2.5rem;
-    }
-
-    .animated-blob {
-        width: 200px;
-        height: 200px;
-    }
-}
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .home-title {
-        font-size: 2.5rem;
-    }
-
-    .animated-circle {
-        width: 200px;
-        height: 200px;
-    }
-}
-.home-subtitle, .home-title,.start-button,.generate-button,.history-button{
-  animation: fadeIn 2s ease-in-out;
-}
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -137,18 +79,19 @@ body {
     }
 }  
 .home-subtitle, .home-title{
-    position: relative;
-    bottom:80px;
-    left:50px;
+  position: relative;
+  bottom:80px;
+  left:50px;
 }
 
 
 
 .home-title{
-    color:white;
-    font-weight: bold;
-    font-size: 4.5rem
+  color:white;
+  font-weight: bold;
+  font-size: 4.5rem
 }
+
 
 .home-subtitle{
 color:#cdcdcd;
@@ -156,7 +99,6 @@ padding:10px;
 font-size:1.5rem;
 margin-top:30px;
 }
-
 
 .navbar-brand {
     color:white;
@@ -166,13 +108,6 @@ margin-top:30px;
 
 
 
-.start-button:hover {
-    background: #f8f8f8; /* Solid blue on hover */
-    border: 5px solid #ffffff; /* Blue border */
-
-    color: black;
-    transform: scale(1.05); /* Slight hover effect */
-}
 
 .navbar .nav-link {
     color: #fff;
@@ -188,19 +123,6 @@ margin-top:30px;
     text-decoration: none;
 }
 
-@media (max-width: 576px) {
-    .home-title {
-        font-size: 1.8rem; /* Adjust the title size for smaller screens */
-    }
-
-    .home-subtitle {
-        font-size: 0.9rem; /* Smaller font size for subtitles on phones */
-    }
-
-    .btn {
-        font-size: 1rem; /* Adjust button size for smaller screens */
-    }
-}
 
 
 .flash-message {
@@ -432,10 +354,10 @@ margin-top:30px;
   margin-bottom: 10px;
 }
 .gen-image{
-  width: 150px; 
-  height: 150px;
+  width: 190px; 
+  height: 190px;
   position:relative; 
-  left:240px;
+  left:200px;
   object-fit: contain;
   display: none;
 }
@@ -465,14 +387,25 @@ margin-top:30px;
   color: rgba(255, 255, 255, 0.5); /* Placeholder text color */
 }
 
-.chatbox button {
-  border-radius: 20px;
-  padding: 5px 20px;
-  background-color: #4dabf7;
-  color: white;
-  border: none;
+
+
+.chatbox button{
+  background: transparent;
+  color:white;
+  border-radius: 30px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.75); /* Focus glow */
+  border: 5px solid #ffffff; /* Blue border */
+  margin-top: 50px;
+  position:relative;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  transition: all 0.3s ease-in-out;
 }
 
 .chatbox button:hover {
-  background-color: #1e90ff; /* Darker blue on hover */
+  background: #f8f8f8; /* Solid blue on hover */
+  border: 5px solid #ffffff; /* Blue border */
+  color: black;
+  transform: scale(1.05); /* Slight hover effect */
 }
