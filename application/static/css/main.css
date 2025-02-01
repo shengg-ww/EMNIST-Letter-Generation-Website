@@ -19,6 +19,30 @@ body {
   animation: blob-animation 25s infinite ease-in-out, gradient-animation 5s infinite linear;
   transition: transform 0.4s ease, box-shadow 0.4s ease; 
 }
+/* User Icon Styling */
+.user-icon {
+  font-size: 1.8rem;
+  color: #ffffff;
+  transition: color 0.3s ease;
+}
+
+/* Change color on hover */
+.nav-link:hover .user-icon {
+  color: #00bfff;  /* Light blue on hover */
+}
+
+/* Username Styling */
+.username {
+  font-size: 1rem;
+  color: #ffffff;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+/* Change username color on hover */
+.nav-link:hover .username {
+  color: #00bfff;  /* Light blue on hover */
+}
 
 .animated-blob3 {
   position: absolute; /* Position it relative to the nearest positioned ancestor */
@@ -110,11 +134,10 @@ margin-top:30px;
 
 
 .navbar .nav-link {
-    color: #fff;
     border: 2px solid white;
     border-radius: 50px;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-    margin:10px;
+    box-shadow: 0 0 15px rgba(255, 255, 255);
+    margin:15px;
 }
 
 .navbar .nav-link:hover {
@@ -409,3 +432,4 @@ margin-top:30px;
   color: black;
   transform: scale(1.05); /* Slight hover effect */
 }
+

@@ -1,9 +1,15 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-transparent">
     <div class="container">
         <!-- Navbar Brand -->
- 
         <a class="navbar-brand" href="/home">SW Labs</a>
-   
+
+        <!-- User Profile Section with Avatar -->
+        <div class="navbar-profile d-flex align-items-center">
+            <a href="/profile" class="nav-link d-flex align-items-center">
+                <i class="fa-solid fa-user-circle user-icon"></i>  <!-- FontAwesome User Icon -->
+                <span class="username ms-2">{{ current_user.username }}</span>  <!-- Display the username -->
+            </a>
+        </div>
 
         <!-- Toggler Button for Collapsible Navbar -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -13,7 +19,7 @@
         <!-- Collapsible Navbar Content -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                {% if  request.endpoint == 'login' or request.endpoint =='register' %}
+                {% if request.endpoint == 'login' or request.endpoint == 'register' %}
                     <!-- Simplified Navbar -->
                     <li class="nav-item">
                         <a class="nav-link" href="/">Back</a>
@@ -24,9 +30,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/register">Register</a>
                     </li>
-        
-                {% elif  request.endpoint == 'index'%}
-                    <!-- Simplified Navbar -->
+                {% elif request.endpoint == 'index' %}
                     <li class="nav-item">
                         <a class="nav-link" href="/login">Log In</a>
                     </li>

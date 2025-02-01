@@ -1,0 +1,100 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="profile-container container mt-5 ">
+    <div class="text-center">
+        <h1 class="profile-title">{{ username }}</h1>
+    </div>
+    <!-- Display Date Joined -->
+    <div class="text-center">
+        <p class="profile-subtitle text-muted">Member since: {{ date_joined.strftime('%B %d, %Y') }}</p>
+    </div>
+
+    <!-- User Metrics Section -->
+    <div class="row text-center g-4">
+        <div class="col-md-4">
+            <div class="metric-card">
+                <h2>{{ total_predictions }}</h2>
+                <p>Total Predictions</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-card">
+                <h2>{{ total_favorites }}</h2>
+                <p>Favorites</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-card">
+                <h2>{{ favorite_percentage | round(2) }}%</h2>
+                <p>Favorite Rate</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Metrics Section -->
+    <h3 class="insight-text mt-5">Your Activity Insights</h3>
+    <div class="row text-center g-4">
+        <div class="col-md-4">
+            <div class="metric-card">
+                <h2>
+                    {% if first_prediction_date != 'N/A' %}
+                        {{ first_prediction_date.strftime('%-d %b %Y') }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </h2>
+                <p>First Prediction Date</p>
+            </div>
+        </div>
+
+        <!-- Display Most and Least Predicted Letters -->
+        <div class="col-md-4">
+            <div class="metric-card">
+                <h2>{{ most_predicted_letter }}</h2>
+                <p>Most Predicted Letter</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="metric-card">
+                <h2>{{ least_predicted_letter }}</h2>
+                <p>Least Predicted Letter</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="metric-card">
+                <h2>
+                    {% if last_prediction_date != 'N/A' %}
+                        {{ last_prediction_date.strftime('%-d %b %Y') }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </h2>
+                <p>Last Prediction Date</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Favorite Images Section -->
+    <h3 class="favourite-text">Your Favorite Predictions</h3>
+    {% if favorite_entries %}
+    <div class="row row-cols-1 row-cols-md-3 g-4 mt-3">
+        {% for entry in favorite_entries %}
+        <div class="col">
+            <div class="card shadow-sm">
+                <img src="data:image/png;base64,{{ entry.image_data }}" class="card-img-top" alt="Favorite Image">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Letter: {{ entry.letter }}</h5>
+                    <p class="card-text text-muted">Predicted on: {{ entry.timestamp.strftime('%-d %b %Y') }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="favourite-text text-muted mt-3">You haven't marked any predictions as favorites yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
