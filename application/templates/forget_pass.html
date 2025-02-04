@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="forget-password-container">
+    <h2 class="forget-password-title">Forget Password</h2>
+    <p>
+        {% if not user %}
+            Enter the email address linked to your account to reset your password.
+        {% else %}
+            Enter your new password to complete the reset process.
+        {% endif %}
+    </p>
+
+
+
+    <form method="POST" class="forget-password-form" novalidate>
+        {{ form.hidden_tag() }}
+
+        <!-- Step 1: Email Input -->
+        {% if not user %}
+            <div class="forget-password-group">
+                {{ form.email.label(class_="forget-password-label") }}
+                {{ form.email(class_="forget-password-input") }}
+            </div>
+            <div class="forget-password-group">
+                {{ form.submit_email(class_="forget-password-button") }}
+            </div>
+        {% endif %}
+
+        <!-- Step 2: Password Reset Inputs -->
+        {% if user %}
+            <input type="hidden" name="email" value="{{ email }}"> <!-- Preserve email -->
+            <div class="forget-password-group">
+                {{ form.new_password.label(class_="forget-password-label") }}
+                {{ form.new_password(class_="forget-password-input") }}
+            </div>
+            <div class="forget-password-group">
+                {{ form.confirm_password.label(class_="forget-password-label") }}
+                {{ form.confirm_password(class_="forget-password-input") }}
+            </div>
+            <div class="forget-password-group">
+                {{ form.submit_password(class_="forget-password-button") }}
+            </div>
+        {% endif %}
+    </form>
+</div>
+
+{% endblock %}

@@ -1,7 +1,7 @@
 from application import db
 from flask_login import UserMixin
 from datetime import datetime
-from sqlalchemy import CheckConstraint
+from sqlalchemy import CheckConstraint, Column, Boolean
 
 # User Model (Default Database)
 class User(UserMixin, db.Model):
@@ -12,6 +12,7 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(120), nullable=False)  # Store hashed passwords
     role = db.Column(db.String(20), nullable=False)
     entries = db.relationship('Entry', backref='user', lazy=True)
+    date_joined = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 
@@ -22,5 +23,6 @@ class Entry(db.Model):
     letter= db.Column(db.String(1), nullable=False)
     image_data = db.Column(db.Text, nullable=False)  
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    is_favorite = Column(Boolean, default=False)  # New field for favorites
 
 

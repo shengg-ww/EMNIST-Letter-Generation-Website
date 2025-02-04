@@ -1,32 +1,57 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container mt-5">
-    <h1 class="text-center mb-4">Prediction History for {{ username }}</h1>
+<div class="history-container container mt-5">
+    <h1 class="page-title">Prediction History for {{ username }}</h1>
 
     {% if entries %}
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div class="card-grid">
         {% for entry in entries %}
-        <div class="col">
-            <div class="card shadow-sm">
-                <!-- Display the image -->
-                <img src="data:image/png;base64,{{ entry.image_data }}" class="card-img-top" alt="Generated Letter {{ entry.letter }}">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Predicted Letter: {{ entry.letter }}</h5>
-                    <p class="card-text text-muted">Predicted on: {{ entry.timestamp }}</p>
-                    <form action="{{ url_for('remove_entry', entry_id=entry.id) }}" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-danger" title="Delete">
-                            <i class="fa-solid fa-trash"></i> Delete
-                        </button>
-                    </form>
+        <div class="prediction-card">
+            <!-- Display the image -->
+            <img src="data:image/png;base64,{{ entry.image_data }}" 
+                 class="prediction-image" 
+                 alt="Generated Letter {{ entry.letter }}">
+
+            <div class="card-content">
+                <div class="card-header">  
+                    <div class="row">
+                      <div class="col-3">
+                            <!-- Favorite Button -->
+                        <form action="{{ url_for('toggle_favorite', entry_id=entry.id) }}" method="POST" class="favorite-form">
+                            <button type="submit" class="favorite-btn" title="Mark as Favorite">
+                                {% if entry.is_favorite %}
+                                    <i class="fa-solid fa-star favorited"></i>  <!-- Filled star if favorite -->
+                                {% else %}
+                                    <i class="fa-regular fa-star"></i>  <!-- Outlined star if not favorite -->
+                                {% endif %}
+                            </button>
+                        </form> 
+                    </div>
+                        <div class="col-9">
+                            <h5 class="prediction-letter">Generated Letter: {{ entry.letter }}</h5>
+                        </div>
+              
                 </div>
+               </div>
+              
+                <p class="prediction-date">Generated on: {{ entry.timestamp }}</p>
+    
+            
+                <!-- Delete Button -->
+                <form action="{{ url_for('remove_entry', entry_id=entry.id) }}" method="POST">
+                    <button type="submit" class="delete-btn">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                </form>
             </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="text-center mt-5">
+    <div class="empty-state">
         <h2>No prediction history available</h2>
+        <p>Your predictions will appear here once generated.</p>
     </div>
     {% endif %}
 </div>

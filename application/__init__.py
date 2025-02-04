@@ -2,6 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
+from datetime import datetime
 
 
 #create the Flask app
@@ -38,7 +39,7 @@ with app.app_context():
     if not existing_admin:
         # Create the admin user
         hashed_password = generate_password_hash(admin_password)
-        admin_user = User(username=admin_username, email=admin_email, password=hashed_password, role=admin_role)
+        admin_user = User(username=admin_username, email=admin_email, password=hashed_password, role=admin_role,  date_joined=datetime.utcnow())  # Set the date_joined to today)
         db.session.add(admin_user)
         db.session.commit()
         print(f"Admin user '{admin_username}' created.")

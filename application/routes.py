@@ -1,14 +1,12 @@
 from application import app
 from flask import render_template, request, flash, url_for ,redirect,jsonify
-from application.forms import LoginForm,RegisterForm
+from application.forms import LoginForm,RegisterForm, ForgetPasswordForm
 from .models import User, Entry
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_cors import CORS, cross_origin
-from tensorflow.keras.preprocessing import image
 from PIL import Image, ImageOps
 from application import db
 import numpy as np
-import tensorflow.keras.models
 from werkzeug.security import check_password_hash, generate_password_hash
 import re
 import base64
@@ -23,7 +21,7 @@ import tensorflow as tf
 import requests
 import io  # 
 import matplotlib.pyplot as plt  # 
-
+from collections import Counter
 
 
 #Handles http://127.0.0.1:5000/
@@ -64,7 +62,7 @@ def login():
         if user and check_password_hash(user.password, password):
             login_user(user)  # Log the user in
             flash("Login successful!", "success")
-            return redirect(url_for('form'))  # Redirect 
+            return redirect(url_for('home'))  # Redirect 
         else:
             form.username.errors.append("Invalid username or password")  
 
@@ -125,14 +123,10 @@ def logout():
 
 @app.route('/home')
 @login_required
-def form():
+def home():
     # Get the username of the logged-in user
     username = current_user.username
     return render_template("home.html",title='Home', css_file='css/main.css', current_page="home", username=username)
-# ✅ Load the CGAN model locally
-
-
-
 
 @app.route('/generate', methods=['GET'])
 @login_required
@@ -239,9 +233,25 @@ def save_letter():
 @login_required
 def history():
     entries = Entry.query.filter_by(user_id=current_user.id).all()
+    # Display most recent letters first
+    sorted_entries = sorted(entries, key=lambda x: x.timestamp, reverse=True)
     # Get the username of the logged-in user
     username = current_user.username
-    return render_template('history.html', title='History', css_file='css/index.css', current_page='history', entries=entries, username=username)
+    return render_template('history.html', title='History', css_file='css/index.css', current_page='history', entries=sorted_entries, username=username)
+
+
+@app.route('/toggle_favorite/<int:entry_id>', methods=['POST'])
+def toggle_favorite(entry_id):
+    # Fetch the entry from the database, or return 404 if not found
+    entry = Entry.query.get_or_404(entry_id)
+    
+    # Toggle the favorite status
+    entry.is_favorite = not entry.is_favorite
+    
+    # Commit the changes to the database
+    db.session.commit()
+    
+    return redirect(url_for('history'))
 
 # route for removing entries
 @app.route('/remove/<int:entry_id>', methods=['POST'])
@@ -262,3 +272,91 @@ def remove_entry(entry_id):
         flash(f"Error deleting entry: {str(e)}", "danger")
 
     return redirect(url_for('history'))
+
+@app.route('/profile', methods=['GET'])
+@login_required
+def profile():
+    # Fetch all entries for the current user
+    user_entries = Entry.query.filter_by(user_id=current_user.id).all()
+
+    # Total Predictions
+    total_predictions = len(user_entries)
+    
+    # Favorite Predictions
+    favorite_entries = [entry for entry in user_entries if entry.is_favorite]
+    total_favorites = len(favorite_entries)
+    
+    # Favorite Percentage
+    favorite_percentage = (total_favorites / total_predictions) * 100 if total_predictions > 0 else 0
+
+    # Most Predicted Letter
+    letters = [entry.letter for entry in user_entries]
+  
+    letter_counts = Counter(letters)
+
+    # Most and least predicted letters
+    most_predicted_letter = letter_counts.most_common(1)[0][0] if letter_counts else 'N/A'
+    least_predicted_letter = letter_counts.most_common()[-1][0] if letter_counts else 'N/A'
+
+    # First Prediction Date
+    first_prediction_date = min((entry.timestamp for entry in user_entries), default='N/A')
+
+
+    # Last Prediction Date (to show recent activity)
+    last_prediction_date = max((entry.timestamp for entry in user_entries), default='N/A')
+
+
+    return render_template('profile.html',
+                            title='Profile',
+                            css_file='css/profile.css',
+                           username=current_user.username,
+                           date_joined=current_user.date_joined,
+                           total_predictions=total_predictions,
+                           total_favorites=total_favorites,
+                           favorite_percentage=favorite_percentage,
+                           most_predicted_letter=most_predicted_letter,
+                           least_predicted_letter=least_predicted_letter,
+                           first_prediction_date=first_prediction_date,
+                           last_prediction_date=last_prediction_date,
+                           favorite_entries=favorite_entries)
+
+@app.route('/forget_password', methods=['GET', 'POST'])
+def forget_password():
+    form = ForgetPasswordForm()
+    user = None
+    error_message = None 
+
+    email = request.form.get('email')  # Hidden input to persist email
+    if email:
+        user = User.query.filter_by(email=email).first()
+
+    if form.validate_on_submit():
+        if form.submit_email.data:  # Email submission
+            email = form.email.data
+            user = User.query.filter_by(email=email).first()
+           
+            if user: 
+                return redirect(url_for('forget_password', email=email))
+
+        if form.submit_password.data:  # Password reset submission
+            if user:
+                    new_password_hash = generate_password_hash(form.new_password.data)
+                    user.password = new_password_hash
+                    db.session.commit()
+                    # Flash success message
+                    flash('Password updated successfully!', 'success')
+                    return redirect(url_for('index'))
+    elif form.new_password.data != form.confirm_password.data:
+                    flash('Password must match ', 'danger') 
+
+   
+    return render_template(
+        'forget_pass.html',
+        title='Forget Password',
+        form=form,
+        user=user,
+        email=email,
+        error_message=error_message,
+        css_file='css/main.css',
+        current_page='forget_password'
+    )
