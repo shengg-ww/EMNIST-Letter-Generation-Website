@@ -1,6 +1,6 @@
 from application import app
 from flask import render_template, request, flash, url_for ,redirect,jsonify
-from application.forms import LoginForm,RegisterForm
+from application.forms import LoginForm,RegisterForm, ForgetPasswordForm
 from .models import User, Entry
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_cors import CORS, cross_origin
@@ -310,7 +310,7 @@ def profile():
 
     return render_template('profile.html',
                             title='Profile',
-                            css_file='css/index.css',
+                            css_file='css/profile.css',
                            username=current_user.username,
                            date_joined=current_user.date_joined,
                            total_predictions=total_predictions,
@@ -321,3 +321,44 @@ def profile():
                            first_prediction_date=first_prediction_date,
                            last_prediction_date=last_prediction_date,
                            favorite_entries=favorite_entries)
+
+@app.route('/forget_password', methods=['GET', 'POST'])
+def forget_password():
+    form = ForgetPasswordForm()
+    user = None
+    error_message = None 
+
+    email = request.form.get('email')  # Hidden input to persist email
+    if email:
+        user = User.query.filter_by(email=email).first()
+
+    if form.validate_on_submit():
+        if form.submit_email.data:  # Email submission
+            email = form.email.data
+            user = User.query.filter_by(email=email).first()
+           
+            if user: 
+                return redirect(url_for('forget_password', email=email))
+
+        if form.submit_password.data:  # Password reset submission
+            if user:
+                    new_password_hash = generate_password_hash(form.new_password.data)
+                    user.password = new_password_hash
+                    db.session.commit()
+                    # Flash success message
+                    flash('Password updated successfully!', 'success')
+                    return redirect(url_for('index'))
+    elif form.new_password.data != form.confirm_password.data:
+                    flash('Password must match ', 'danger') 
+
+   
+    return render_template(
+        'forget_pass.html',
+        title='Forget Password',
+        form=form,
+        user=user,
+        email=email,
+        error_message=error_message,
+        css_file='css/main.css',
+        current_page='forget_password'
+    )

@@ -433,3 +433,96 @@ margin-top:30px;
   transform: scale(1.05); /* Slight hover effect */
 }
 
+
+/* Forget Password Form Styles */
+.forget-password-container {
+  padding: 40px;
+  max-width: 500px;
+  position: relative;
+  top:100px;
+  margin: 0 auto; /* Center align */
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 30px;
+  box-shadow: 0 4px 30px rgba(139, 139, 139, 0.5);
+  backdrop-filter: blur(10px);
+  animation: fadeIn 2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+      transform: translateY(20px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+.form-error-message {
+  color: #d9534f; /* Bootstrap Danger Red */
+  font-size: 14px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+
+.forget-password-container p{
+  color: rgb(212, 210, 210)
+}
+.forget-password-title {
+  color:rgb(212, 212, 212);
+  margin-top:10px;
+  margin-bottom: 30px;
+}
+
+/* Form Group */
+.forget-password-group {
+  margin-bottom: 15px;
+}
+
+/* Form Labels */
+.forget-password-label {
+  font-size: 14px;
+  color:rgb(212, 212, 212);
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* Form Inputs */
+.forget-password-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  background-color: #ffffff;
+  color: #495057;
+  font-size: 14px;
+}
+
+/* Input Focus State */
+.forget-password-input:focus {
+  border-color: #80bdff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+}
+
+/* Buttons */
+.forget-password-button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 20px;;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Button Hover State */
+.forget-password-button:hover {
+  background-color: #0056b3;
+}

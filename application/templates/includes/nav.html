@@ -4,13 +4,14 @@
         <a class="navbar-brand" href="/home">SW Labs</a>
 
         <!-- User Profile Section with Avatar -->
+        {% if request.endpoint != 'login' and request.endpoint != 'register' and request.endpoint != 'index' and request.endpoint != 'forget_password'%}
         <div class="navbar-profile d-flex align-items-center">
             <a href="/profile" class="nav-link d-flex align-items-center">
                 <i class="fa-solid fa-user-circle user-icon"></i>  <!-- FontAwesome User Icon -->
                 <span class="username ms-2">{{ current_user.username }}</span>  <!-- Display the username -->
             </a>
         </div>
-
+        {% endif %}
         <!-- Toggler Button for Collapsible Navbar -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -19,7 +20,7 @@
         <!-- Collapsible Navbar Content -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                {% if request.endpoint == 'login' or request.endpoint == 'register' %}
+                {% if request.endpoint == 'login' or request.endpoint == 'register'  or request.endpoint == 'forget_password'%}
                     <!-- Simplified Navbar -->
                     <li class="nav-item">
                         <a class="nav-link" href="/">Back</a>
