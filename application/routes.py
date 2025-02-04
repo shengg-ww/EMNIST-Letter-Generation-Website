@@ -4,11 +4,9 @@ from application.forms import LoginForm,RegisterForm, ForgetPasswordForm
 from .models import User, Entry
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from flask_cors import CORS, cross_origin
-from tensorflow.keras.preprocessing import image
 from PIL import Image, ImageOps
 from application import db
 import numpy as np
-import tensorflow.keras.models
 from werkzeug.security import check_password_hash, generate_password_hash
 import re
 import base64
