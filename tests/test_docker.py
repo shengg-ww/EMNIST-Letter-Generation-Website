@@ -6,51 +6,93 @@ from application import db, app
 import json
 import numpy as np
 from sqlalchemy.exc import IntegrityError
+
+
+
 # ------------------------------------------------------------------------#
-# Test 3: Expected Failure when inputting out of range values directly into Database
-# These should be expected failure because there are direct constraints for the database, faling the insertion of invalid data
+# Test 1: Validity Test of Tensorflow Server
 
+# Base URL of TensorFlow server
+BASE_URL = "https://ca2-daaa2b02-2309123-limshengwei.onrender.com/v1/models/saved_cgan:predict"
 
-@pytest.mark.parametrize("entry_data, expected_exception", [
-    ({
-        "user_id": 1,
-        "letter": "ABC",
-        "image_data": 150000000,  # Exceeds max range
-    }, IntegrityError),
+# Function to generate the payload in the correct format
+def generate_payload(prompt):
+    if prompt == "Z":
+        class_index = [0.0]
+    else:
+        class_index = [float(ord(prompt) - ord('A') + 1)]
 
-    # Invalid monthly premium (negative value)
-    ({
-        "user_id": 1,
-        "letter": 1,
-        "image_data": None,
-    }, IntegrityError),
-    # Invalid clv premium (negative value)
-    ({
-        "user_id": None,
-        "letter": 'A'
-    }, IntegrityError),
+    z_input = np.random.normal(0, 1, 100).tolist()  # Noise vector
+
+    payload = {
+        "signature_name": "serving_default",
+        "instances": [{
+            "input_13": z_input,  # Noise input
+            "input_12": class_index  # Class index
+        }]
+    }
+    return payload
+
+# Test for different class prompts
+@pytest.mark.parametrize("prompt", ["A", "M", "Z",'S','B'])
+def test_model_prediction(prompt):
+    payload = generate_payload(prompt)
+    
+    response = requests.post(BASE_URL, json=payload)
+    
+    assert response.status_code == 200, f"Prediction request failed with status code {response.status_code}"
+    
+    result = response.json()
+    assert "predictions" in result, "No predictions found in the response"
+    assert len(result["predictions"]) == 1, "Unexpected number of predictions returned"
+
+    print(f"Prediction Output for class '{prompt}':", result["predictions"])
+
+# ------------------------------------------------------------------------#
+# Test 2: Validity Test for Invalid Entry for Tensorflow Server
+@pytest.mark.parametrize("invalid_payload", [
+    # Missing 'input_12' (class index)
+    {
+        "signature_name": "serving_default",
+        "instances": [{
+            "input_13": np.random.normal(0, 1, 100).tolist()
+        }]
+    },
+
+    # Incorrect data type for 'input_12' (should be a float list, not a string)
+    {
+        "signature_name": "serving_default",
+        "instances": [{
+            "input_13": np.random.normal(0, 1, 100).tolist(),
+            "input_12": ["invalid_string"]
+        }]
+    },
+
+    # Missing 'input_13' (noise vector)
+    {
+        "signature_name": "serving_default",
+        "instances": [{
+            "input_12": [1.0]
+        }]
+    },
+
+    # Incorrect shape of 'input_13' (should be 100-dimensional)
+    {
+        "signature_name": "serving_default",
+        "instances": [{
+            "input_13": np.random.normal(0, 1, 50).tolist(),  # Only 50 elements instead of 100
+            "input_12": [1.0]
+        }]
+    },
+
+    # Completely malformed payload
+    {
+        "invalid_key": "invalid_value"
+    }
 ])
 
-# 3 expected failures
-@pytest.mark.xfail(reason="Testing database constraints", strict=True)
-def test_expected_failures_with_constraints(app, entry_data, expected_exception):
-    with app.app_context():
-        try:
-            # Create the entry object with test data
-            entry = Entry(**entry_data)
-
-            # Attempt to add and commit the entry to the database
-            db.session.add(entry)
-            db.session.commit()
-
-        except Exception as e:
-            # Assert that the raised exception matches the expected one
-            if expected_exception and isinstance(e, expected_exception):
-                print(f"Expected failure occurred: {e}")
-                raise  #  xfail
-            else:
-                print(f"Unexpected exception occurred: {e}")
-                raise
-        finally:
-            # Rollback the session to clean up
-            db.session.rollback()
+def test_model_prediction_invalid(invalid_payload):
+    response = requests.post(BASE_URL, json=invalid_payload)
+    
+     # Expecting a 400 Bad Request response for invalid inputs
+    assert response.status_code == 400, f"Expected 400 Bad Request but got {response.status_code}"

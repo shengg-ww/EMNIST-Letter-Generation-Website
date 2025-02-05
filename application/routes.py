@@ -22,7 +22,7 @@ import requests
 import io  # 
 import matplotlib.pyplot as plt  # 
 from collections import Counter
-
+from sqlalchemy import func, desc, case
 
 #Handles http://127.0.0.1:5000/
 @app.route('/')
@@ -151,7 +151,7 @@ def proxy_generate():
         prompt = data['prompt'].strip().upper()
         if len(prompt) != 1 or not prompt.isalpha():
             return jsonify({"success": False, "error": "Input must be a single letter (A-Z)."}), 400
-        # ✅ Convert letter to class index based on your model's convention
+        #  Convert letter to class index based on your model's convention
         if prompt == "Z":
                 class_index =[0.0]
         else:
@@ -206,7 +206,6 @@ def save_letter():
         letter = letter[1:-1]
 
     if not letter or not letter.isalpha() or len(letter) != 1:
-        flash("Invalid input! Please enter a single letter.", "danger")
         return jsonify({"success": False, "error": "Invalid input"}), 400
 
     # Get the logged-in user ID
@@ -214,7 +213,6 @@ def save_letter():
 
     # Ensure user_id is not None
     if not user_id:
-        flash("User not authenticated.", "danger")
         return jsonify({"success": False, "error": "User not authenticated"}), 403  # Forbidden
     
     if not image_base64:
@@ -225,19 +223,86 @@ def save_letter():
     db.session.add(new_entry)
     db.session.commit()
 
-    flash(f"Letter '{letter}' saved successfully!", "success")
     return jsonify({"success": True, "message": "Saved successfully!"}), 200
     
 
-@app.route("/history", methods=['GET','POST'])
+
+import re  # Regular expression for validation
+
+@app.route("/history", methods=['GET', 'POST'])
 @login_required
 def history():
-    entries = Entry.query.filter_by(user_id=current_user.id).all()
-    # Display most recent letters first
-    sorted_entries = sorted(entries, key=lambda x: x.timestamp, reverse=True)
-    # Get the username of the logged-in user
-    username = current_user.username
-    return render_template('history.html', title='History', css_file='css/index.css', current_page='history', entries=sorted_entries, username=username)
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    sort_by = request.args.get('sort_by', 'recent')
+    letter_filter = request.args.get('letters', '')
+    show_favorites = request.args.get('favorites', 'false').lower() == 'true'
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+
+    query = Entry.query.filter_by(user_id=current_user.id)
+
+    # Validate and apply letter filter (only continuous uppercase letters like "AB")
+    if letter_filter:
+        if not re.fullmatch(r'[A-Z]+', letter_filter):
+            return jsonify({'entries': [], 'has_next': False, 'error': 'Invalid letter format'}), 400
+
+        # Convert the string into individual letters and apply filter
+        query = query.filter(Entry.letter.in_(list(letter_filter)))
+
+    # Filter by favorites
+    if show_favorites:
+        query = query.filter(Entry.is_favorite.is_(True))
+
+    # Filter by date range
+    if start_date:
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
+            query = query.filter(Entry.timestamp >= start_date_obj)
+        except ValueError:
+            return jsonify({'entries': [], 'has_next': False, 'error': 'Invalid start date format'}), 400
+
+    if end_date:
+        try:
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d')
+            query = query.filter(Entry.timestamp <= end_date_obj)
+        except ValueError:
+            return jsonify({'entries': [], 'has_next': False, 'error': 'Invalid end date format'}), 400
+
+    # Apply consistent sorting to ensure proper filtering during pagination
+    if sort_by == 'recent':
+        query = query.order_by(Entry.timestamp.desc())
+    elif sort_by == 'oldest':
+        query = query.order_by(Entry.timestamp.asc())
+
+    # Pagination after all filters and sorting are applied
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    entries = pagination.items
+
+    # Return JSON for AJAX requests
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        entries_data = [{
+            'id': entry.id,
+            'letter': entry.letter,
+            'timestamp': entry.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'is_favorite': entry.is_favorite,
+            'image_data': entry.image_data
+        } for entry in entries]
+
+        return jsonify({
+            'entries': entries_data,
+            'has_next': pagination.has_next,
+            'current_page': pagination.page
+        })
+
+    # Render the page for initial load
+    return render_template('history.html',
+                           title='History',
+                           css_file='css/index.css',
+                           current_page='history',
+                           entries=entries,
+                           username=current_user.username)
+
 
 
 @app.route('/toggle_favorite/<int:entry_id>', methods=['POST'])
@@ -251,8 +316,7 @@ def toggle_favorite(entry_id):
     # Commit the changes to the database
     db.session.commit()
     
-    return redirect(url_for('history'))
-
+    return jsonify({'success': True, 'is_favorite': entry.is_favorite})
 # route for removing entries
 @app.route('/remove/<int:entry_id>', methods=['POST'])
 @login_required
@@ -272,43 +336,43 @@ def remove_entry(entry_id):
         flash(f"Error deleting entry: {str(e)}", "danger")
 
     return redirect(url_for('history'))
-
 @app.route('/profile', methods=['GET'])
 @login_required
 def profile():
-    # Fetch all entries for the current user
-    user_entries = Entry.query.filter_by(user_id=current_user.id).all()
+    user_id = current_user.id
 
-    # Total Predictions
-    total_predictions = len(user_entries)
-    
-    # Favorite Predictions
-    favorite_entries = [entry for entry in user_entries if entry.is_favorite]
-    total_favorites = len(favorite_entries)
-    
-    # Favorite Percentage
+    # Combined query to fetch total predictions, favorites, first and last dates
+    aggregated_data = db.session.query(
+        func.count(Entry.id).label('total_predictions'),
+        func.sum(case((Entry.is_favorite == True, 1), else_=0)).label('total_favorites'),
+        func.min(Entry.timestamp).label('first_prediction_date'),
+        func.max(Entry.timestamp).label('last_prediction_date')
+    ).filter(Entry.user_id == user_id).one()
+
+    total_predictions = aggregated_data.total_predictions
+    total_favorites = aggregated_data.total_favorites
+    first_prediction_date = aggregated_data.first_prediction_date or 'N/A'
+    last_prediction_date = aggregated_data.last_prediction_date or 'N/A'
+
+    # Calculate favorite percentage
     favorite_percentage = (total_favorites / total_predictions) * 100 if total_predictions > 0 else 0
 
-    # Most Predicted Letter
-    letters = [entry.letter for entry in user_entries]
-  
-    letter_counts = Counter(letters)
+    # Query to get most and least predicted letters in one go
+    letter_counts = db.session.query(
+        Entry.letter, func.count(Entry.letter).label('count')
+    ).filter_by(user_id=user_id).group_by(Entry.letter).order_by(desc('count')).all()
 
-    # Most and least predicted letters
-    most_predicted_letter = letter_counts.most_common(1)[0][0] if letter_counts else 'N/A'
-    least_predicted_letter = letter_counts.most_common()[-1][0] if letter_counts else 'N/A'
+    most_predicted_letter = letter_counts[0][0] if letter_counts else 'N/A'
+    least_predicted_letter = letter_counts[-1][0] if letter_counts else 'N/A'
 
-    # First Prediction Date
-    first_prediction_date = min((entry.timestamp for entry in user_entries), default='N/A')
-
-
-    # Last Prediction Date (to show recent activity)
-    last_prediction_date = max((entry.timestamp for entry in user_entries), default='N/A')
-
+    # Retrieve favorite entries for display (optional, depending on UI needs)
+    favorite_entries = []
+    if total_favorites > 0:
+        favorite_entries = Entry.query.filter_by(user_id=user_id, is_favorite=True).all()
 
     return render_template('profile.html',
-                            title='Profile',
-                            css_file='css/profile.css',
+                           title='Profile',
+                           css_file='css/profile.css',
                            username=current_user.username,
                            date_joined=current_user.date_joined,
                            total_predictions=total_predictions,
@@ -319,6 +383,7 @@ def profile():
                            first_prediction_date=first_prediction_date,
                            last_prediction_date=last_prediction_date,
                            favorite_entries=favorite_entries)
+
 
 @app.route('/forget_password', methods=['GET', 'POST'])
 def forget_password():
@@ -360,3 +425,95 @@ def forget_password():
         css_file='css/main.css',
         current_page='forget_password'
     )
+
+# --------------------------------------------------------------------------------------------------------------------------------#
+# API ROUTES FOR TESTING 
+
+@app.route("/api/save", methods=["POST"])
+@login_required  # Ensure the user is logged in
+def save_letter_api():
+    data = request.json
+    letter = data.get("letter", "").strip().upper()  # Strip spaces and enforce uppercase
+    image_base64 = data.get("image")  # Base64 encoded image from frontend
+
+     # Remove unnecessary surrounding quotes if they exist
+    if letter.startswith('"') and letter.endswith('"'):
+        letter = letter[1:-1]
+
+    if not letter or not letter.isalpha() or len(letter) != 1:
+        return jsonify({"success": False, "error": "Invalid input"}), 400
+
+    # Get the logged-in user ID
+    user_id = current_user.id  
+
+    # Ensure user_id is not None
+    if not user_id:
+        return jsonify({"success": False, "error": "User not authenticated"}), 403  # Forbidden
+    
+    if not image_base64:
+        return jsonify({"success": False, "error": "No image data provided"}), 400
+  # Assuming a successful save logic here
+    try:
+        entry = Entry(user_id=user_id, letter=letter, image_data=image_base64)
+        db.session.add(entry)
+        db.session.commit()
+        
+        # Return success response after saving
+        return jsonify({"success": True, "message": "Saved successfully!"}), 200
+
+    except Exception as e:
+        # Return error response if something goes wrong during save
+        return jsonify({"success": False, "error": f"Failed to save entry: {str(e)}"}), 500
+
+
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    try:
+        # Parse the JSON payload
+        data = request.json
+        username = data.get("username")
+        password = data.get("password")
+
+        if not username or not password:
+            return jsonify({"error": "Username and password are required"}), 400
+
+        # Query the database for the user
+        user = User.query.filter_by(username=username).first()
+
+        # Validate the user and password
+        if user and check_password_hash(user.password, password):
+            return jsonify({"message": "Login successful"}), 200
+        else:
+            return jsonify({"error": "Invalid username or password"}), 401
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/history", methods=['GET', 'POST'])
+@login_required
+def api_history():
+    # Pagination parameters from query string (for AJAX requests)
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+
+    # Fetch entries for the current user, sorted by timestamp (most recent first)
+    pagination = Entry.query.filter_by(user_id=current_user.id).order_by(Entry.timestamp.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    entries = pagination.items
+
+    # Check if it's an AJAX request (fetch more entries)
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        entries_data = [{
+            'id': entry.id,
+            'letter': entry.letter,
+            'timestamp': entry.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'is_favorite': entry.is_favorite,
+            'image_data': entry.image_data
+        } for entry in entries]
+
+        return jsonify({
+            'entries': entries_data,
+            'has_next': pagination.has_next,
+            'current_page': pagination.page
+        })
+
