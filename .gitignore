@@ -1,5 +1,5 @@
 ModelDev/emnist-letters-train.csv
 __pycache__/
 application/__pycache__/
-
+instance
 *.pyc
