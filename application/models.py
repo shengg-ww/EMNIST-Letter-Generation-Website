@@ -25,6 +25,7 @@ class Entry(db.Model):
     image_data = db.Column(db.Text, nullable=False)  
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
     is_favorite = Column(Boolean, default=False)  # New field for favorites
+    colormap = db.Column(db.String(50))  # Add this line to store colormap
 
 
     __table_args__ = (

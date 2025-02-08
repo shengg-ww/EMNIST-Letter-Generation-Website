@@ -1,7 +1,6 @@
 {% extends "layout.html" %}
 
 {% block content %}
-
 <div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
     <!-- Title Section -->
     <div class="row w-100">
@@ -14,42 +13,67 @@
     <!-- Chat UI Section -->
     <div class="row flex-grow-1 w-100 d-flex justify-content-center align-items-center">
   
-            <!-- Chatbox -->
-            <div class="chatbox p-4 rounded shadow-sm w-100">
-                <!-- Messages -->
-                <div class="messages mb-4 p-3 text-center" id="chat-messages" style="height: 300px; overflow-y: auto;">
-                    <h2 class="text-white image-title" id="prompt-display" ></h2>
-                    <img
-                        class="gen-image"
-                        id="generated-image"
-                        src=""
-                        alt="Generated EMNIST Image"
-                        style="border: 1px solid #ddd; border-radius: 8px; max-width: 50%; margin-top: 20px; display: none;"
-                    />
-                </div>
-                <!-- Save Image Button -->
-                <button id="save-button" class="btn btn-success mt-3" style="display: none; margin-bottom: 20px;">Save Image</button>
-                <!-- Input Section -->
-                <form id="input-form" class="d-flex">
-                    <input
-                        type="text"
-                        name="prompt"
-                        id="chat-input"
-                        class="form-control me-3"
-                        placeholder="Enter a letter (A-Z)"
-                        required
-                        maxlength="1"
-                        style="height: 60px; font-size: 1.2rem; text-transform: uppercase; text-align: center;"
-                    />
-                
-                </form>
+        <!-- Chatbox -->
+        <div class="chatbox p-4 rounded shadow-sm w-100">
+            <!-- Messages -->
+            <div class="messages mb-4 p-3 text-center" id="chat-messages" style="height: 300px; overflow-y: auto;">
+                <h2 class="text-white image-title" id="prompt-display" ></h2>
+                <img
+                    class="gen-image"
+                    id="generated-image"
+                    src=""
+                    alt="Generated EMNIST Image"
+                    style="border: 1px solid #ddd; border-radius: 8px; max-width: 50%; margin-top: 20px; display: none;"
+                />
             </div>
 
-            <div class="animated-blob3"></div>
+                    <!-- Color Picker Section (Scrollable Dropdown) -->
+        <div class="text-center mb-3">
+            <label for="color-picker" class="text-white">Select Color Scheme:</label>
+            <select id="color-picker" class="form-control scrollable-dropdown w-auto">
+                <option value="gray_r">Black (Default)</option>
+                <option value="gray">Inverse Background</option>
+                <option value="Blues">Blue</option>
+                <option value="Greens">Green</option>
+                <option value="Reds">Red</option>
+                <option value="Purples">Purple</option>
+                <option value="YlGnBu">Yellow-Blue</option>
+                <option value="twilight">Twilight</option>
+                <option value="inferno">Inferno</option>
+                <option value="magma">Magma</option>
+                <option value="plasma">Plasma</option>
+                <option value="viridis">Viridis</option>
+                <option value="cividis">Cividis</option>
+                <option value="Spectral">Spectral</option>
+                <option value="coolwarm">CoolWarm</option>
+                <option value="hsv">HSV</option>
+            </select>
+        </div>
+
+
+            <!-- Save Image Button -->
+            <button id="save-button" class="btn btn-success mt-3" style="display: none; margin-bottom: 20px;">Save Image</button>
+
+            <!-- Input Section -->
+            <form id="input-form" class="d-flex">
+                <input
+                    type="text"
+                    name="prompt"
+                    id="chat-input"
+                    class="form-control me-3"
+                    placeholder="Enter a letter (A-Z)"
+                    required
+                    maxlength="1"
+                    style="height: 60px; font-size: 1.2rem; text-transform: uppercase; text-align: center;"
+                />
+            </form>
+        </div>
+
+        <div class="animated-blob3"></div>
     
     </div>
 </div>
+
 <!-- Include External JavaScript -->
 <script src="{{ url_for('static', filename='js/generate.js') }}"></script>
-
 {% endblock %}

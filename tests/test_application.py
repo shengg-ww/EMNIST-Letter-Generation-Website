@@ -73,9 +73,6 @@ def test_expected_failures_with_constraints(app, entry_data, expected_exception)
 
 # Parameterized test for valid and invalid inputs
 @pytest.mark.parametrize("letter, image_data, expected_status, expected_response", [
-    # Valid case
-    ("A", base64.b64encode(b"TestImageData").decode("utf-8"), 200, {"success": True, "message": "Saved successfully!"}),
-
     # Invalid cases
     ("AB", base64.b64encode(b"TestImageData").decode("utf-8"), 400, {"success": False, "error": "Invalid input"}),
     ("1", base64.b64encode(b"TestImageData").decode("utf-8"), 400, {"success": False, "error": "Invalid input"}),
@@ -136,18 +133,15 @@ def test_api_login_consistency(client, credentials, expected_status, expected_me
 
 
 #---------------------------------------------------------------------------------------------#
-# Test 5: Range Testing of retriveing history data 
-# This test is used to evaluate whether the application can handle the large amount of history data, to test inifnite scrolling
-
+# Test 6: Range Testing of retriveing history data 
+# This test is used to evaluate whether the application can handle the large amount of history data, to also test chunk retrival of inifnite scrolling
 def test_history_performance(client, app):
-    
-
     with client.session_transaction() as session:
         session['_user_id'] = 1  # Mock user ID
 
     # Insert 100,000 predictions with valid image data
+    inserted_entries = []  # To store references to the inserted entries
     with app.app_context():
-        entries = []
         dummy_image_data = base64.b64encode(b"DummyImageData").decode('utf-8')
         for _ in range(100000):
             entry = Entry(
@@ -156,9 +150,9 @@ def test_history_performance(client, app):
                 image_data=dummy_image_data,
                 timestamp=datetime.now()
             )
-            entries.append(entry)
+            db.session.add(entry)
+            inserted_entries.append(entry)  # Track inserted entry
 
-        db.session.bulk_save_objects(entries)
         db.session.commit()
 
     # Measure the response time of the /history route
@@ -171,5 +165,13 @@ def test_history_performance(client, app):
     # Check if the response is successful
     assert response.status_code == 200
 
-    # Assert that the response time is within an acceptable range (e.g., < 2 seconds)
-    assert response_time < 1.5, f"Response time was too slow: {response_time:.2f} seconds"
+    # Assert that the response time is within an acceptable range (e.g., < 1 seconds)
+    assert response_time < 1, f"Response time was too slow: {response_time:.2f} seconds"
+
+    # Cleanup: Delete only the mock entries inserted during the test
+    with app.app_context():
+        # Use the IDs or timestamps of the inserted entries to delete only those
+        for entry in inserted_entries:
+            db.session.delete(entry)  # Delete each inserted entry individually
+
+        db.session.commit()

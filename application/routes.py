@@ -19,6 +19,7 @@ import pathlib, os
 import json
 import tensorflow as tf
 import requests
+import re 
 import io  # 
 import matplotlib.pyplot as plt  # 
 from collections import Counter
@@ -135,11 +136,12 @@ def generate():
     """
     Renders the UI for generating images.
     """
-    return render_template('generate.html', css_file='css/main.css', current_page='generate')
+    return render_template('generate.html', title='Generate', css_file='css/main.css', current_page='generate')
 
 # TensorFlow Serving API URL
 GAN_SERVER_URL = 'https://ca2-daaa2b02-2309123-limshengwei.onrender.com/v1/models/saved_cgan:predict'
-@app.route('/proxy_generate', methods=['GET','POST'])
+
+@app.route('/proxy_generate', methods=['GET', 'POST'])
 def proxy_generate():
     try:
         # Parse input JSON from frontend
@@ -151,11 +153,20 @@ def proxy_generate():
         prompt = data['prompt'].strip().upper()
         if len(prompt) != 1 or not prompt.isalpha():
             return jsonify({"success": False, "error": "Input must be a single letter (A-Z)."}), 400
-        #  Convert letter to class index based on your model's convention
+        
+        # Get the color map (default to 'gray_r' if not provided)
+        cmap = data.get('cmap', 'gray_r')
+
+        # Validate colormap
+        available_cmaps = plt.colormaps()  # Get list of available colormaps
+        if cmap not in available_cmaps:
+            return jsonify({"success": False, "error": f"Invalid colormap. Choose from {available_cmaps}."}), 400
+
+        # Convert letter to class index based on your model's convention
         if prompt == "Z":
-                class_index =[0.0]
+            class_index = [0.0]
         else:
-                class_index =[float(ord(prompt) - ord('A')+1)] 
+            class_index = [float(ord(prompt) - ord('A') + 1)] 
 
         z_input = np.random.normal(0, 1, 100).tolist()  # Shape: (100,)
 
@@ -181,7 +192,7 @@ def proxy_generate():
 
         # Convert image to Base64 for frontend display
         img_bytes = io.BytesIO()
-        plt.imsave(img_bytes, generated_image, cmap="gray_r", format='png')
+        plt.imsave(img_bytes, generated_image, cmap=cmap, format='png')
         img_bytes.seek(0)
         base64_image = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
 
@@ -192,7 +203,6 @@ def proxy_generate():
         return jsonify({"success": False, "error": f"TensorFlow Serving error: {str(e)}"}), 500
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-    
         
 @app.route("/save", methods=["POST"])
 @login_required  # Ensure the user is logged in
@@ -200,6 +210,7 @@ def save_letter():
     data = request.json
     letter = data.get("letter", "").strip().upper()  # Strip spaces and enforce uppercase
     image_base64 = data.get("image")  # Base64 encoded image from frontend
+    colormap = data['cmap']  # Receive the colormap
 
      # Remove unnecessary surrounding quotes if they exist
     if letter.startswith('"') and letter.endswith('"'):
@@ -217,9 +228,17 @@ def save_letter():
     
     if not image_base64:
         return jsonify({"success": False, "error": "No image data provided"}), 400
+    
+    if not colormap:
+        return jsonify({"success": False, "error": "No color map provided"}), 400
+    
+    # Validate the colormap (ensure it's a valid colormap)
+    available_cmaps = plt.colormaps()  # Get list of available colormaps
+    if colormap not in available_cmaps:
+        return jsonify({"success": False, "error": f"Invalid colormap. Choose from {available_cmaps}."}), 400
 
     # Save new entry
-    new_entry = Entry(user_id=user_id, letter=letter,image_data=image_base64,  timestamp=datetime.utcnow())
+    new_entry = Entry(user_id=user_id, letter=letter,image_data=image_base64, colormap=colormap,  timestamp=datetime.utcnow())
     db.session.add(new_entry)
     db.session.commit()
 
@@ -227,9 +246,8 @@ def save_letter():
     
 
 
-import re  # Regular expression for validation
 
-@app.route("/history", methods=['GET', 'POST'])
+@app.route("/history", methods=['GET'])
 @login_required
 def history():
     page = request.args.get('page', 1, type=int)
@@ -239,6 +257,7 @@ def history():
     show_favorites = request.args.get('favorites', 'false').lower() == 'true'
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
+    colormap_filter = request.args.get('colormaps', '')  # Get colormap query param
 
     query = Entry.query.filter_by(user_id=current_user.id)
 
@@ -246,8 +265,6 @@ def history():
     if letter_filter:
         if not re.fullmatch(r'[A-Z]+', letter_filter):
             return jsonify({'entries': [], 'has_next': False, 'error': 'Invalid letter format'}), 400
-
-        # Convert the string into individual letters and apply filter
         query = query.filter(Entry.letter.in_(list(letter_filter)))
 
     # Filter by favorites
@@ -269,24 +286,32 @@ def history():
         except ValueError:
             return jsonify({'entries': [], 'has_next': False, 'error': 'Invalid end date format'}), 400
 
-    # Apply consistent sorting to ensure proper filtering during pagination
+    # Filter by colormap if provided
+    if colormap_filter:
+        colormap_list = colormap_filter.split(',')
+        query = query.filter(Entry.colormap.in_(colormap_list))
+
+    # Apply sorting
     if sort_by == 'recent':
         query = query.order_by(Entry.timestamp.desc())
     elif sort_by == 'oldest':
         query = query.order_by(Entry.timestamp.asc())
+    elif sort_by == 'colormap':
+        query = query.order_by(Entry.colormap)
 
-    # Pagination after all filters and sorting are applied
+    # Paginate results
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     entries = pagination.items
 
-    # Return JSON for AJAX requests
+    # Handle AJAX requests
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         entries_data = [{
             'id': entry.id,
             'letter': entry.letter,
             'timestamp': entry.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             'is_favorite': entry.is_favorite,
-            'image_data': entry.image_data
+            'image_data': entry.image_data,
+            'colormap': entry.colormap  # Ensure colormap is included in the response
         } for entry in entries]
 
         return jsonify({
@@ -295,7 +320,7 @@ def history():
             'current_page': pagination.page
         })
 
-    # Render the page for initial load
+    # Render template for normal page load
     return render_template('history.html',
                            title='History',
                            css_file='css/index.css',
@@ -365,6 +390,13 @@ def profile():
     most_predicted_letter = letter_counts[0][0] if letter_counts else 'N/A'
     least_predicted_letter = letter_counts[-1][0] if letter_counts else 'N/A'
 
+    # Query to find most common colormap used
+    colormap_counts = db.session.query(
+        Entry.colormap, func.count(Entry.colormap).label('count')
+    ).filter_by(user_id=user_id).group_by(Entry.colormap).order_by(desc('count')).all()
+
+    most_common_colormap = colormap_counts[0][0] if colormap_counts else 'N/A'
+
     # Retrieve favorite entries for display (optional, depending on UI needs)
     favorite_entries = []
     if total_favorites > 0:
@@ -382,6 +414,7 @@ def profile():
                            least_predicted_letter=least_predicted_letter,
                            first_prediction_date=first_prediction_date,
                            last_prediction_date=last_prediction_date,
+                           most_common_colormap=most_common_colormap,  # Pass the most common colormap
                            favorite_entries=favorite_entries)
 
 

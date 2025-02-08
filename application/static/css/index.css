@@ -411,7 +411,42 @@ body {
     margin-bottom: 10px;
     font-weight: 500;
   }
-  
+  .colormap-title {
+    font-size: 1.1rem;
+    color: #aaa7a7;
+    margin-top:25px;
+    padding-right:40px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+  .dropdown-menu{
+  background-color: #2c2c2c;  /* Dark input background */
+  border-radius: 10px;
+  border: 1px solid #444;  /* Light border */
+  color: #fff;  /* White text */
+  transition: all 0.3s ease-in-out;
+  width:300px;
+  padding:10px
+
+  }
+.reset-filters{
+  background-color: #fa4848;  /* Dark input background */
+  border-radius: 10px;
+  border: 1px solid #444;  /* Light border */
+  color: #fff;  /* White text */
+}
+
+.reset-filters:hover{
+  background-color: #482222;  /* Dark input background */
+  border-radius: 10px;
+  border: 1px solid #444;  /* Light border */
+  color: #ffffff;  /* White text */
+}
+   
+  .dropdown-menu .form-check:hover,  .dropdown-menu .form-check-input:hover {
+    background-color: #808080; /* Slightly darker on hover */
+}
+
   .prediction-date {
     font-size: 0.9rem;
     color: #999;

@@ -189,7 +189,20 @@ margin-top:30px;
   .dismiss-btn:hover {
     background-color: #0056b3;
   }
-  
+
+  /* Make the dropdown scrollable */
+.scrollable-dropdown {
+  max-height: 200px;   /* Limit the height */
+  overflow-y: auto;    /* Enable vertical scrolling */
+  display: block;      /* Ensure it takes up full width */
+  font-size: 16px;     /* Improve readability */
+}
+
+/* Ensure dropdown items look good */
+.scrollable-dropdown option {
+  padding: 10px;
+}
+
 
 .fixed-bottom{
   color:rgb(160, 160, 160)

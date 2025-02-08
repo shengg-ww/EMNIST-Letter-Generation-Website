@@ -16,10 +16,22 @@
 
             <!-- Sort by Date -->
             <div class="col-md-3">
-                <select id="sort-by" class="form-select">
-                    <option value="recent" selected>Sort by Most Recent</option>
+                <select id="sort-by" class="form-control">
+                    <option value="recent">Sort by Recent</option>
                     <option value="oldest">Sort by Oldest</option>
                 </select>
+            </div>
+
+            <!-- Colormap Filter (Dropdown checklist with scrollable options) -->
+            <div class="col-md-3">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle form-control" type="button" id="colormap-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        Filter Colors
+                    </button>
+                    <ul class="dropdown-menu" id="colormap-filter" style="max-height: 150px; overflow-y: auto;">
+                        <!-- Colormap options will be injected here via JavaScript -->
+                    </ul>
+                </div>
             </div>
 
             <!-- Date Range Picker (Merged Start and End Dates) -->
@@ -34,12 +46,17 @@
                     <label class="form-check-label" for="show-favorites">Show Favorites Only</label>
                 </div>
             </div>
+
+            <!-- Reset All Filters Button -->
+            <div class="col-md-3">
+                <button id="reset-filters" class="btn reset-filters">Reset All Filters</button>
+            </div>
         </div>
     </div>
 
     <!-- Container for Entries -->
     <div id="entries-container" class="card-grid">
-        
+        <!-- Entries will be displayed here -->
     </div>
 
     <!-- Loading Spinner -->
@@ -52,6 +69,7 @@
 <!-- Include Flatpickr CSS and JS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <!-- Include External JavaScript -->
 <script src="{{ url_for('static', filename='js/history.js') }}"></script>
 

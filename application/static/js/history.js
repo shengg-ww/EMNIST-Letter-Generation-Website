@@ -10,7 +10,7 @@ let activeSortBy = 'recent';
 let activeFavorites = false;
 let activeStartDate = '';
 let activeEndDate = '';
-
+let activeColormaps = [];  // New variable to store selected colormaps
 
 // Initialize Flatpickr Date Range Picker
 flatpickr("#date-range", {
@@ -27,6 +27,7 @@ flatpickr("#date-range", {
         resetAndLoadEntries();  // Reload entries with new date range
     }
 });
+
 // Function to display flash messages
 function showFlashMessage(message, type = 'success') {
     const flashContainer = document.getElementById('flash-messages');
@@ -72,9 +73,6 @@ function toggleFavorite(entryId, form) {
     });
 }
 
-
-
-
 document.addEventListener('DOMContentLoaded', () => {
     // Debounced letter search
     document.getElementById('search-letters').addEventListener('input', () => {
@@ -97,6 +95,14 @@ document.addEventListener('DOMContentLoaded', () => {
         resetAndLoadEntries();  // Reload entries with new sort order
     });
 
+    document.getElementById('colormap-filter').addEventListener('change', () => {
+        activeColormaps = Array.from(document.querySelectorAll("#colormap-filter input[type='checkbox']:checked"))
+            .map(checkbox => checkbox.value);
+
+        resetAndLoadEntries();  // Reload entries with the updated colormap filter
+    });
+    
+
     // Infinite scroll trigger
     window.addEventListener('scroll', () => {
         if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100 && !loading && hasMoreEntries) {
@@ -104,18 +110,18 @@ document.addEventListener('DOMContentLoaded', () => {
             loadEntries(currentPage);  // Load next page with current filters
         }
     });
-  // Delegate the favorite and delete actions
-  document.getElementById('entries-container').addEventListener('click', function(event) {
-      // Handle Favorite Click
-      if (event.target.closest('.favorite-btn')) {
-          event.preventDefault();
-          const form = event.target.closest('form');
-          const entryId = form.dataset.entryId;
-          toggleFavorite(entryId, form);
-      }
 
+    // Delegate the favorite and delete actions
+    document.getElementById('entries-container').addEventListener('click', function(event) {
+        // Handle Favorite Click
+        if (event.target.closest('.favorite-btn')) {
+            event.preventDefault();
+            const form = event.target.closest('form');
+            const entryId = form.dataset.entryId;
+            toggleFavorite(entryId, form);
+        }
+    });
 
-  })
     // Initial load
     loadEntries(currentPage);
 });
@@ -131,7 +137,7 @@ function resetAndLoadEntries() {
 // Load entries with current filters
 function loadEntries(page) {
     loading = true;
-    document.getElementById('loading').style.display = 'block';
+    document.getElementById('loading').style.display = 'block'
 
     // Build URL with active filters
     let url = `/history?page=${page}&per_page=${perPage}&sort_by=${activeSortBy}`;
@@ -141,6 +147,7 @@ function loadEntries(page) {
     if (activeStartDate && activeEndDate) {
         url += `&start_date=${activeStartDate}&end_date=${activeEndDate}`;
     }
+    if (activeColormaps.length > 0) url += `&colormaps=${activeColormaps.join(',')}`;  // Add colormap filter
 
     fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(response => response.json())
@@ -150,7 +157,10 @@ function loadEntries(page) {
             if (data.entries.length === 0 && page === 1) {
                 container.innerHTML = '<p class="text-center" style="color:white">No entries found for the selected filters.</p>';
                 hasMoreEntries = false;
-                document.getElementById('loading').style.display = 'none';
+
+                if (loadingElement) {
+                    loadingElement.style.display = 'none';  // Hide loading spinner
+                }
                 return;
             }
 
@@ -173,6 +183,7 @@ function loadEntries(page) {
                                 </div>
                                 <div class="col-9">
                                     <h5 class="prediction-letter">Generated Letter: ${entry.letter}</h5>
+                                    <h6 class="colormap-title">Color map: ${entry.colormap}</h6>
                                 </div>
                             </div>
                         </div>
@@ -186,11 +197,9 @@ function loadEntries(page) {
                 `;
                 container.appendChild(card);
             });
-            
 
             if (!data.has_next) {
                 hasMoreEntries = false;
-                document.getElementById('end-of-content').style.display = 'block';
             }
 
             document.getElementById('loading').style.display = 'none';
@@ -201,5 +210,66 @@ function loadEntries(page) {
             document.getElementById('loading').style.display = 'none';
             loading = false;
         });
+
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    // List of available colormaps
+    const colormapOptions = [
+        {name:'Black (Default)',value:'gray_r'},
+        {name:'Inverse Background',value:'gray'},
+        { name: 'Blue', value: 'Blues' },
+        { name: 'Green', value: 'Greens' },
+        { name: 'Red', value: 'Reds' },
+        { name: 'Purple', value: 'Purples' },
+        { name: 'Yellow-Blue', value: 'YlGnBu' },
+        { name: 'Twilight', value: 'twilight' },
+        { name: 'Inferno', value: 'inferno' },
+        { name: 'Magma', value: 'magma' },
+        { name: 'Plasma', value: 'plasma' },
+        { name: 'Viridis', value: 'viridis' },
+        { name: 'Cividis', value: 'cividis' },
+        { name: 'Spectral', value: 'Spectral' },
+        { name: 'CoolWarm', value: 'coolwarm' },
+        { name: 'HSV', value: 'hsv' }
+    ];
+
+    // Select the dropdown container
+    const colormapFilter = document.getElementById('colormap-filter');
+
+    // Dynamically add checkboxes for each colormap
+    colormapOptions.forEach(colormap => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="${colormap.value}" id="colormap-${colormap.value}">
+                <label class="form-check-label" for="colormap-${colormap.value}">${colormap.name}</label>
+            </div>
+        `;
+        colormapFilter.appendChild(listItem);
+    });
+});
+
+
+document.getElementById('reset-filters').addEventListener('click', () => {
+    // Reset all filter variables
+    document.getElementById('search-letters').value = '';
+    document.getElementById('sort-by').value = 'recent';
+    document.getElementById('show-favorites').checked = false;
+    document.getElementById('date-range').value = '';
+    
+    activeSearchLetters = '';
+    activeSortBy = 'recent';
+    activeFavorites = false;
+    activeStartDate = '';
+    activeEndDate = '';
+
+    // Uncheck all colormap checkboxes
+    document.querySelectorAll("#colormap-filter input[type='checkbox']").forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    activeColormaps = [];
+
+    // Reload the entries with the default filters
+    resetAndLoadEntries();
+});

@@ -3,6 +3,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const promptDisplay = document.getElementById("prompt-display");
     const imageDisplay = document.getElementById("generated-image");
     const saveButton = document.getElementById("save-button");
+    const colorPicker = document.getElementById("color-picker");
+
+    document.getElementById("input-form").addEventListener("submit", function(event) {
+        event.preventDefault();  // Prevent form submission on Enter key press
+    });
+
+    document.getElementById("chat-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();  // Prevent Enter key from submitting the form
+        }
+    });
 
     let timeout = null;
     const GAN_PROXY_URL = "http://127.0.0.1:5000/proxy_generate"; // Using Flask proxy
@@ -23,12 +34,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function sendRequest(letter) {
         try {
-
+            // Get selected color map
+            const selectedColor = colorPicker.value;
 
             const response = await fetch(GAN_PROXY_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: letter })
+                body: JSON.stringify({ prompt: letter, cmap: selectedColor })
             });
 
             const data = await response.json();
@@ -64,6 +76,9 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        // Get the selected colormap for saving the image
+        const selectedColor = colorPicker.value;
+
         // Step 2: Convert image to Base64
         try {
             const response = await fetch(imageDisplay.src);
@@ -74,12 +89,16 @@ document.addEventListener("DOMContentLoaded", function () {
             reader.onloadend = async function () {
                 const base64Image = reader.result.split(",")[1]; // Extract base64 part
 
-                // Step 3: Send letter and Base64 image to the server
+                // Step 3: Send letter, Base64 image, and colormap to the server
                 try {
                     const saveResponse = await fetch("/save", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ letter: letter, image: base64Image })
+                        body: JSON.stringify({
+                            letter: letter,
+                            image: base64Image,
+                            cmap: selectedColor  // Include the colormap in the save request
+                        })
                     });
 
                     const data = await saveResponse.json();
@@ -97,5 +116,21 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("Failed to fetch image data:", error);
             alert("An error occurred while processing the image.");
         }
+    });
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const dropdownButton = document.getElementById("color-dropdown");
+    const dropdownItems = document.querySelectorAll("#color-options .dropdown-item");
+
+    dropdownItems.forEach(item => {
+        item.addEventListener("click", function(event) {
+            event.preventDefault();
+            const selectedColor = this.getAttribute("data-value");
+            dropdownButton.textContent = this.textContent; // Update button text
+            dropdownButton.setAttribute("data-selected", selectedColor);
+            console.log("Selected Colormap:", selectedColor); // Debugging
+        });
     });
 });
