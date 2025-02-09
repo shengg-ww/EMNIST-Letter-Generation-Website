@@ -1,11 +1,20 @@
 {% extends "layout.html" %}
 
 {% block content %}
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> b167db9f05c759145987f6825b8db71b411c6934
 <div class="container-fluid vh-100 d-flex">
     <div class="row flex-grow-1 h-100 w-100">
         <!-- Left Section (Typing Title) -->
         <div class="col-sm-12 col-md-6 d-flex flex-column align-items-start justify-content-center px-5">
+<<<<<<< HEAD
             <h1 class="home-title">AI-Powered Image Generation</h1>
+=======
+            <h1 class="home-title">Image Generation</h1>
+>>>>>>> b167db9f05c759145987f6825b8db71b411c6934
             <p class="home-subtitle typing-text" id="typing-title"></p>
             <!-- Get Started Button -->
             <div>
@@ -13,6 +22,7 @@
             </div>
         </div>
 
+<<<<<<< HEAD
         <!-- Right Section (3D Animation using Three.js) -->
         <div class="col-sm-12 col-md-6 d-flex align-items-center justify-content-center position-relative">
             <div id="threejs-container"></div> <!-- Container for Three.js -->
@@ -35,6 +45,30 @@
 
 <!-- Include Three.js via CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+=======
+        <!-- Right Section (Animated Circle) -->
+        <div class="col-sm-12 col-md-6 d-flex align-items-center justify-content-center position-relative">
+            <div class="animated-blob"></div>
+        </div>
+    </div>
+</div>
+<!-- Parallax Section -->
+<div class="parallax-container">
+    <div class="parallax-content">
+        <h2>About This Project</h2>
+        <p>
+            This AI-powered image generator is designed to create handwritten EMNIST letters in real-time. 
+            Simply type a letter, and our trained GAN model will generate a realistic handwritten image based on the EMNIST dataset.
+        </p>
+        <p>
+           
+        </p>
+    </div>
+</div>
+
+
+
+>>>>>>> b167db9f05c759145987f6825b8db71b411c6934
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const titleElement = document.getElementById('typing-title');
