@@ -361,6 +361,9 @@ def remove_entry(entry_id):
         flash(f"Error deleting entry: {str(e)}", "danger")
 
     return redirect(url_for('history'))
+
+
+
 @app.route('/profile', methods=['GET'])
 @login_required
 def profile():
@@ -375,7 +378,7 @@ def profile():
     ).filter(Entry.user_id == user_id).one()
 
     total_predictions = aggregated_data.total_predictions
-    total_favorites = aggregated_data.total_favorites
+    total_favorites = aggregated_data.total_favorites or 0
     first_prediction_date = aggregated_data.first_prediction_date or 'N/A'
     last_prediction_date = aggregated_data.last_prediction_date or 'N/A'
 
@@ -390,12 +393,14 @@ def profile():
     most_predicted_letter = letter_counts[0][0] if letter_counts else 'N/A'
     least_predicted_letter = letter_counts[-1][0] if letter_counts else 'N/A'
 
-    # Query to find most common colormap used
+        # Query to find both most and least common colormap in one go
     colormap_counts = db.session.query(
         Entry.colormap, func.count(Entry.colormap).label('count')
     ).filter_by(user_id=user_id).group_by(Entry.colormap).order_by(desc('count')).all()
 
+    # Get the most common and least common colormap
     most_common_colormap = colormap_counts[0][0] if colormap_counts else 'N/A'
+    least_common_colormap = colormap_counts[-1][0] if colormap_counts else 'N/A'
 
     # Retrieve favorite entries for display (optional, depending on UI needs)
     favorite_entries = []
@@ -414,7 +419,8 @@ def profile():
                            least_predicted_letter=least_predicted_letter,
                            first_prediction_date=first_prediction_date,
                            last_prediction_date=last_prediction_date,
-                           most_common_colormap=most_common_colormap,  # Pass the most common colormap
+                           most_common_colormap=most_common_colormap,
+                           least_common_colormap=least_common_colormap,  # Pass the least common colormap
                            favorite_entries=favorite_entries)
 
 

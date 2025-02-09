@@ -191,18 +191,21 @@ margin-top:30px;
   }
 
   /* Make the dropdown scrollable */
-.scrollable-dropdown {
-  max-height: 200px;   /* Limit the height */
-  overflow-y: auto;    /* Enable vertical scrolling */
-  display: block;      /* Ensure it takes up full width */
-  font-size: 16px;     /* Improve readability */
-}
 
 /* Ensure dropdown items look good */
 .scrollable-dropdown option {
   padding: 10px;
 }
+.scrollable-dropdown{
+  background-color: #2c2c2c;  /* Dark input background */
+  border-radius: 10px;
+  border: 1px solid #444;  /* Light border */
+  color: #fff;  /* White text */
+  transition: all 0.3s ease-in-out;
+  width:300px;
+  padding:10px
 
+  }
 
 .fixed-bottom{
   color:rgb(160, 160, 160)
@@ -397,19 +400,13 @@ margin-top:30px;
   object-fit: contain;
   display: none;
 }
-.message-user {
-  text-align: right;
-  color: #4dabf7; /* Light blue for user messages */
-}
+
 .image-title{
   margin-bottom: 40px; 
   display: none; 
   font-size:25px;
 }
-.message-ai {
-  text-align: left;
-  color: #bdbdbd; /* Light gray for AI messages */
-}
+
 
 .chatbox input {
   border-radius: 20px;
@@ -538,4 +535,49 @@ margin-top:30px;
 /* Button Hover State */
 .forget-password-button:hover {
   background-color: #0056b3;
+}
+
+
+/* 🎨 Dropdown Styling */
+.scrollable-dropdown {
+  background-color: #222; /* Dark theme */
+  color: #fff; /* White text */
+  border: 2px solid #444; /* Subtle border */
+  border-radius: 8px; /* Rounded corners */
+  max-height:150px;
+  margin-top:20px;
+  margin-bottom:20px;
+  padding: 8px;
+  font-size: 16px;
+  max-height:50px;
+  overflow-y: auto;
+  max-width: 250px; /* Prevents dropdown from being too wide */
+  cursor: pointer;
+  appearance: none; /* Removes default styles */
+}
+
+
+
+
+.scrollable-dropdown .dropdown-item {
+  color: #ddd;
+}
+
+.scrollable-dropdown .dropdown-item:hover {
+  background-color: #444;
+  color: #fff;
+}
+
+/* 🎨 Scrollable Options */
+.scrollable-dropdown option {
+  background-color: #111; /* Dark background for options */
+  color: #fff; /* White text */
+}
+
+
+.scrollable-dropdown:focus {
+
+  outline: none;
+  border-color: #00ccff; /* Blue glow effect */
+  box-shadow: 0 0 8px #00ccff; /* Neon glow */
 }

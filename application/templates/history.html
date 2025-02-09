@@ -2,68 +2,53 @@
 
 {% block content %}
 
+<!-- Three.js Canvas for Background -->
+<div id="threejs-container"></div>
+
 <div class="history-container container mt-5">
     <h1 class="page-title">Prediction History for {{ username }}</h1>
 
     <!-- Filter and Search Section -->
     <div class="filter-section">
         <div class="row g-3">
-            <!-- Multi-letter Search (Only uppercase continuous letters like AB) -->
             <div class="col-md-3">
                 <input type="text" id="search-letters" class="form-control" placeholder="Search letters (e.g., AB)" autocomplete="off">
                 <small class="text-danger d-none" id="search-error">Only uppercase letters allowed without spaces or commas.</small>
             </div>
-
-            <!-- Sort by Date -->
             <div class="col-md-3">
                 <select id="sort-by" class="form-control">
                     <option value="recent">Sort by Recent</option>
                     <option value="oldest">Sort by Oldest</option>
                 </select>
             </div>
-
-            <!-- Colormap Filter (Dropdown checklist with scrollable options) -->
             <div class="col-md-3">
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle form-control" type="button" id="colormap-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         Filter Colors
                     </button>
-                    <ul class="dropdown-menu" id="colormap-filter" style="max-height: 150px; overflow-y: auto;">
-                        <!-- Colormap options will be injected here via JavaScript -->
-                    </ul>
+                    <ul class="dropdown-menu" id="colormap-filter" style="max-height: 150px; overflow-y: auto;"></ul>
                 </div>
             </div>
-
-            <!-- Date Range Picker (Merged Start and End Dates) -->
             <div class="col-md-3">
                 <input type="text" id="date-range" class="form-control" placeholder="Select date range" readonly>
             </div>
-
-            <!-- Show Favorites -->
             <div class="col-md-3">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="show-favorites">
                     <label class="form-check-label" for="show-favorites">Show Favorites Only</label>
                 </div>
             </div>
-
-            <!-- Reset All Filters Button -->
             <div class="col-md-3">
                 <button id="reset-filters" class="btn reset-filters">Reset All Filters</button>
             </div>
         </div>
     </div>
 
-    <!-- Container for Entries -->
-    <div id="entries-container" class="card-grid">
-        <!-- Entries will be displayed here -->
-    </div>
+    <div id="entries-container" class="card-grid"></div>
 
-    <!-- Loading Spinner -->
     <div id="loading" class="text-center my-4" style="display: none;">
         <i class="fa fa-spinner fa-spin fa-2x"></i> Loading more entries...
     </div>
-
 </div>
 
 <!-- Include Flatpickr CSS and JS -->
@@ -72,5 +57,65 @@
 
 <!-- Include External JavaScript -->
 <script src="{{ url_for('static', filename='js/history.js') }}"></script>
+
+<!-- Include Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+    // Three.js Scene Setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById("threejs-container").appendChild(renderer.domElement);
+    
+    // Particle System
+    const particles = new THREE.BufferGeometry();
+    const particleCount = 500;
+    const positions = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 10;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+    }
+    particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const particleMaterial = new THREE.PointsMaterial({ color: 0x00aaff, size: 0.05 });
+    const particleMesh = new THREE.Points(particles, particleMaterial);
+    scene.add(particleMesh);
+    
+    // Camera Position
+    camera.position.z = 5;
+    
+    // Animation Loop
+    function animate() {
+        requestAnimationFrame(animate);
+        particleMesh.rotation.y += 0.001;
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    // Handle Window Resize
+    window.addEventListener('resize', () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    });
+</script>
+
+<style>
+    body, html {
+        margin: 0;
+        overflow: hidden;
+    }
+    #threejs-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
+    }
+
+</style>
 
 {% endblock %}

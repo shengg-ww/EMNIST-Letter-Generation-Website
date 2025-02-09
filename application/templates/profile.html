@@ -6,11 +6,13 @@
     <div class="text-center">
         <h1 class="profile-title">{{ username }}</h1>
     </div>
+    
     <!-- Display Date Joined -->
     <div class="text-center">
         <p class="profile-subtitle text-muted">Member since: {{ date_joined.strftime('%B %d, %Y') }}</p>
     </div>
-
+        <!-- Three.js Background -->
+        <div id="threejs-background"></div>
     <!-- User Metrics Section -->
     <div class="row text-center g-4">
         <div class="col-md-4">
@@ -76,6 +78,20 @@
                 <p>Last Prediction Date</p>
             </div>
         </div>
+
+        <div class="col-md-4">
+            <div class="metric-card">
+                <h2>{{ most_common_colormap}}</h2>
+                <p>Most Common Color</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="metric-card">
+                <h2>{{ least_common_colormap}}</h2>
+                <p>Least Common Color</p>
+            </div>
+        </div>
     </div>
 
     <!-- Favorite Images Section -->
@@ -98,4 +114,126 @@
     <p class="favourite-text text-muted mt-3">You haven't marked any predictions as favorites yet.</p>
     {% endif %}
 </div>
+
+<!-- Include Three.js Background -->
+<script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js';
+
+    function initThreeJS() {
+        const container = document.getElementById("threejs-background");
+        if (!container) return;
+
+        // Scene, Camera, Renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+
+        // =======================
+        // Faster Floating Particles ✨
+        // =======================
+        const particleCount = 200; // More particles for density
+        const particlesGeometry = new THREE.SphereGeometry(0.05, 16, 16);
+        const positions = new Float32Array(particleCount * 3);
+        const velocities = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 12;  // Spread in space
+            positions[i + 1] = (Math.random() - 0.5) * 12;
+            positions[i + 2] = (Math.random() - 0.5) * 12;
+
+            velocities[i] = (Math.random() - 0.5) * 0.02; // Faster movement
+            velocities[i + 1] = (Math.random() - 0.5) * 0.05;
+            velocities[i + 2] = (Math.random() - 0.5) * 0.05;
+        }
+
+        particlesGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        particlesGeometry.setAttribute("velocity", new THREE.BufferAttribute(velocities, 3));
+
+        const textureLoader = new THREE.TextureLoader();
+        const circleTexture = textureLoader.load('https://threejs.org/examples/textures/sprites/circle.png');
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.07,
+            transparent: true,
+            opacity: 0.8,
+            map: circleTexture,  // Apply circular texture
+            depthTest: false,  // Ensure particles don't overlap badly
+            blending: THREE.AdditiveBlending,
+        });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        // =======================
+        // Lighting Setup ✨
+        // =======================
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.15);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0x00ffff, 1.5);
+        pointLight.position.set(2, 3, 5);
+        scene.add(pointLight);
+
+        // =======================
+        // Animation Loop - Faster Movement ✨
+        // =======================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            let time = Date.now() * 0.002;
+
+            // Move Particles Faster
+            const positions = particlesMesh.geometry.attributes.position.array;
+            const velocities = particlesMesh.geometry.attributes.velocity.array;
+
+            for (let i = 0; i < positions.length; i += 3) {
+                positions[i] += velocities[i];     // X-direction
+                positions[i + 1] += velocities[i + 1]; // Y-direction
+                positions[i + 2] += velocities[i + 2]; // Z-direction
+
+                // Reset if particles move too far
+                if (Math.abs(positions[i]) > 12) positions[i] = (Math.random() - 0.5) * 12;
+                if (Math.abs(positions[i + 1]) > 12) positions[i + 1] = (Math.random() - 0.5) * 12;
+                if (Math.abs(positions[i + 2]) > 12) positions[i + 2] = (Math.random() - 0.5) * 12;
+            }
+
+            particlesMesh.geometry.attributes.position.needsUpdate = true;
+
+            // Faster Glow Pulsing Effect
+            let glowIntensity = 0.6 + Math.sin(time * 1.2) * 0.3;
+            particlesMaterial.opacity = glowIntensity;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // =======================
+        // Resize Handling
+        // =======================
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initThreeJS);
+</script>
+
+<style>
+    #threejs-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: black;
+    }
+</style>
+
 {% endblock %}

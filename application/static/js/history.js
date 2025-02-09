@@ -183,7 +183,7 @@ function loadEntries(page) {
                                 </div>
                                 <div class="col-9">
                                     <h5 class="prediction-letter">Generated Letter: ${entry.letter}</h5>
-                                    <h6 class="colormap-title">Color map: ${entry.colormap}</h6>
+                                    <h6 class="colormap-title">Color: ${entry.colormap}</h6>
                                 </div>
                             </div>
                         </div>
