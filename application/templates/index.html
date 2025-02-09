@@ -2,6 +2,9 @@
 
 {% block content %}
 <div class="container-fluid vh-100 d-flex">
+    <!-- Three.js Background -->
+    <div id="threejs-background"></div>
+    
     <div class="row flex-grow-1 h-100 w-100">
         <!-- Left Section (Typing Title) -->
         <div class="col-sm-12 col-md-6 d-flex flex-column align-items-start justify-content-center px-5">
@@ -22,24 +25,35 @@
 
 <!-- Add CSS to ensure the container is visible -->
 <style>
+    #threejs-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1; /* Place behind content */
+        background: black;
+    }
     #threejs-container {
         width: 100%;
         height: 100%;
         position: absolute;
         top: 0;
         left: 0;
-        background: black;
-        overflow:hidden;
+        background: transparent; /* Make the background transparent so wave is visible */
+        z-index: 1; /* Ensure 3D content appears above the background */
     }
 </style>
 
 <!-- Include Three.js via CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const titleElement = document.getElementById('typing-title');
         typeWriter(titleElement, "Generate AI-generated handwriting with deep learning");
-        initThreeJS(); // Initialize Three.js after DOM is loaded
+        initWaveBackground(); // Initialize the wave background animation
+        initThreeJS(); // Initialize the main 3D content after the background is ready
     });
 
     // ========================
@@ -68,92 +82,133 @@
         
         type();
     }
-// ========================
-// Three.js 3D Animation (AI-Style)
-// ========================
 
-function initThreeJS() {
-    // Select the container
-    const container = document.getElementById("threejs-container");
+    // ========================
+    // Wave Background Animation using Three.js
+    // ========================
+    function initWaveBackground() {
+        const container = document.getElementById("threejs-background");
 
-    if (!container) return;
-    container.innerHTML = "";  // Clear previous content
+        if (!container) return;
 
-    // Create scene
-    const scene = new THREE.Scene();
+        // Scene, Camera, Renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 2;  // Position the camera a bit further back
 
-    // Create camera
-    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.z = 4.5;
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
 
-    // Create WebGL Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.shadowMap.enabled = true; // Enable shadows
-    container.appendChild(renderer.domElement);
+        // Create Geometry for the Wave Effect
+        const waveGeometry = new THREE.PlaneGeometry(10, 10, 100, 100); // Subdivisions allow for smooth wave movement
+        const waveMaterial = new THREE.MeshBasicMaterial({ color: 0x5D2C63, wireframe: true, transparent: true, opacity: 0.4 });
+        const wave = new THREE.Mesh(waveGeometry, waveMaterial);
+        wave.rotation.x = -Math.PI / 2;
+        wave.position.y = -1.5  // Move wave background slightly lower
+        scene.add(wave);
 
-    // ===================
-    // 1. AI Core Sphere 🌐 (Minimalistic Glow)
-    // ===================
-    const sphereGeometry = new THREE.IcosahedronGeometry(1.2, 6);
-    const sphereMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x888888, // Soft grey
-        wireframe: true, 
-        emissive: 0x444444 // Subtle glow effect
-    });
-   
-    const aiCore = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    aiCore.position.y = 0.8
-    aiCore.castShadow = true; // Enable shadow casting
-    scene.add(aiCore);
+        // Animation of the wave
+        function animateWave() {
+            requestAnimationFrame(animateWave);
 
-    // ===================
-    // 2. White Shadow Plane (Under the Sphere)
-    // ===================
-    const shadowGeometry = new THREE.PlaneGeometry(3, 3);
-    const shadowMaterial = new THREE.ShadowMaterial({ opacity: 0.8 }); // Semi-transparent shadow
-    const shadowPlane = new THREE.Mesh(shadowGeometry, shadowMaterial);
-    shadowPlane.rotation.x = -Math.PI / 2;
-    shadowPlane.position.y = -1.5;
-    shadowPlane.receiveShadow = true;
-    scene.add(shadowPlane);
+            const time = Date.now() * 0.001;  // Speed of wave
 
-    // ===================
-    // Lights and Shadows
-    // ===================
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
+            const positions = wave.geometry.attributes.position.array;
+            for (let i = 0; i < positions.length; i += 3) {
+                const x = positions[i];
+                const y = positions[i + 1];
+                const z = Math.sin(x * 0.5 + time) * Math.cos(y * 0.5 + time) * 0.4; // Wave equation for Z position
+                positions[i + 2] = z;  // Apply wave effect to Z
+            }
+            wave.geometry.attributes.position.needsUpdate = true;
 
-    const light = new THREE.PointLight(0xffffff, 1.5);
-    light.position.set(2, 2, 5);
-    light.castShadow = true;
-    scene.add(light);
+            renderer.render(scene, camera);
+        }
 
+        animateWave();
 
-    // ===================
-    // Animation Loop
-    // ===================
-    function animate() {
-        requestAnimationFrame(animate);
-
-        let time = Date.now() * 0.0005;
-
-        // Rotate AI Sphere
-        aiCore.rotation.y += 0.005;
-        aiCore.rotation.x += 0.003;
-
-        renderer.render(scene, camera);
+        // Handle Resize Events
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     }
 
-    animate();
+    // ========================
+    // Three.js 3D Animation (AI-Style)
+    // ========================
+    function initThreeJS() {
+        // Select the container
+        const container = document.getElementById("threejs-container");
 
-    // Handle Resizing
-    window.addEventListener("resize", () => {
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
+        if (!container) return;
+        container.innerHTML = "";  // Clear previous content
+
+        // Create scene
+        const scene = new THREE.Scene();
+
+        // Create camera
+        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 1, 5);  // Adjust camera position to ensure visibility
+
+        // Create WebGL Renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
-    });
-}
+        renderer.shadowMap.enabled = true; // Enable shadows
+        container.appendChild(renderer.domElement);
+
+        // ===================
+        // 1. AI Core Sphere 🌐 (Minimalistic Glow)
+        // ===================
+        const sphereGeometry = new THREE.IcosahedronGeometry(1.2, 6);
+        const sphereMaterial = new THREE.MeshStandardMaterial({
+            color: 0x5B3183, // Soft grey color for the sphere
+            emissive: 0x444444, // Subtle glow effect
+            wireframe: true,  // Show the sphere's wireframe
+        });
+
+        const aiCore = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        aiCore.position.y = 1.4
+        aiCore.castShadow = true; // Enable shadow casting for the sphere
+        scene.add(aiCore);
+
+        // ===================
+        // Lights and Shadows
+        // ===================
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1); // Increase the ambient light intensity
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1.5);
+        pointLight.position.set(2, 2, 5);  // Position the point light to illuminate the sphere
+        scene.add(pointLight);
+
+        // ===================
+        // Animation Loop
+        // ===================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            let time = Date.now() * 0.0005;
+
+            // Rotate AI Sphere
+            aiCore.rotation.y += 0.005;
+            aiCore.rotation.x += 0.003;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle Resizing
+        window.addEventListener("resize", () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    }
 
 </script>
+
 {% endblock %}
