@@ -39,6 +39,7 @@
         const SubtitleElement = document.getElementById('typing-subtitle');
         typeWriter(SubtitleElement, "How can I help you today?");
         initThreeJS(); // Initialize Three.js after DOM is loaded
+        initRippleBackground(); // Initialize the ripple background animation
     });
     function typeWriter(element, text, speed = 75) {
         let i = 0;
@@ -51,6 +52,7 @@
         }
         type();
     }
+    
 
 
     function initThreeJS() {
