@@ -24,6 +24,7 @@ db = SQLAlchemy()
 with app.app_context():
     db.init_app(app)
     from .models import User, Entry
+    
     db.create_all()  # Create all tables
     print('Created all Tables in Database')
 

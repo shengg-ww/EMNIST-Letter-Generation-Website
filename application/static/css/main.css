@@ -400,27 +400,11 @@ margin-top:30px;
   object-fit: contain;
   display: none;
 }
-<<<<<<< HEAD
-
-=======
-.message-user {
-  text-align: right;
-  color: #4dabf7; /* Light blue for user messages */
-}
->>>>>>> b167db9f05c759145987f6825b8db71b411c6934
 .image-title{
   margin-bottom: 40px; 
   display: none; 
   font-size:25px;
 }
-<<<<<<< HEAD
-
-=======
-.message-ai {
-  text-align: left;
-  color: #bdbdbd; /* Light gray for AI messages */
-}
->>>>>>> b167db9f05c759145987f6825b8db71b411c6934
 
 .chatbox input {
   border-radius: 20px;
@@ -550,7 +534,6 @@ margin-top:30px;
 .forget-password-button:hover {
   background-color: #0056b3;
 }
-<<<<<<< HEAD
 
 
 /* 🎨 Dropdown Styling */
@@ -596,5 +579,3 @@ margin-top:30px;
   border-color: #00ccff; /* Blue glow effect */
   box-shadow: 0 0 8px #00ccff; /* Neon glow */
 }
-=======
->>>>>>> b167db9f05c759145987f6825b8db71b411c6934
