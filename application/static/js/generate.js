@@ -1,12 +1,17 @@
 document.addEventListener("DOMContentLoaded", function () {
     const inputField = document.getElementById("chat-input");
     const promptDisplay = document.getElementById("prompt-display");
-    const imageDisplay = document.getElementById("generated-image");
+    const imageContainer = document.getElementById("generated-images-container");
     const saveButton = document.getElementById("save-button");
     const colorPicker = document.getElementById("color-picker");
 
     document.getElementById("input-form").addEventListener("submit", function(event) {
         event.preventDefault();  // Prevent form submission on Enter key press
+    });
+    document.getElementById("chat-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();  // Prevent Enter key from submitting the form
+        }
     });
 
     document.getElementById("chat-input").addEventListener("keypress", function(event) {
@@ -15,28 +20,104 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    let timeout = null;
-    const GAN_PROXY_URL = "http://127.0.0.1:5000/proxy_generate"; // Using Flask proxy
 
-    inputField.addEventListener("input", function () {
-        let letter = inputField.value.toUpperCase();
 
-        if (!/^[A-Z]$/.test(letter)) {
-            inputField.value = "";
+    // Check if all elements exist before proceeding
+    if (!inputField || !promptDisplay || !imageContainer || !colorPicker) {
+        console.error("❌ Error: One or more required elements are missing in the DOM.");
+        return; // Stop execution if elements are missing
+    }
+
+    const GAN_PROXY_URL = "http://127.0.0.1:5000/proxy_generate"; // Ensure it targets the correct backend route
+    let debounceTimer = null; // Prevent API spam
+    let generatedImages = {}; // Store generated images { "A": base64Image, "B": base64Image, " ": blankImage }
+
+        // Generate a blank 28x28 image that matches the selected colormap (cmap)
+    function createBlankImage(cmap) {
+            const canvas = document.createElement("canvas");
+            canvas.width = 28;
+            canvas.height = 28;
+            const ctx = canvas.getContext("2d");
+        
+            // Adjust blank color based on colormap
+            let isInverted = cmap === "gray_r"; // 'gray_r' inverts colors (white text on black)
+            let blankColor = isInverted ? "white" : "black"; 
+        
+            // Fill the entire canvas with the correct color
+            ctx.fillStyle = blankColor;
+            ctx.fillRect(0, 0, 28, 28);
+        
+            return canvas.toDataURL("image/png").split(",")[1]; // Convert to Base64 (remove prefix)
+        }
+        
+
+    // Preload blank image for spaces
+    generatedImages[" "] = createBlankImage();
+
+    inputField.addEventListener("input", function (event) {
+        let text = inputField.value.trim().toUpperCase();
+        if (!/^[A-Z\s]*$/.test(text)) {
+            inputField.value = text.replace(/[^A-Z\s]/g, ""); // Allow only letters and spaces
             return;
         }
 
-        inputField.value = letter;
+        // Update the title dynamically
+        updateTitle(text);
 
-        clearTimeout(timeout);
-        timeout = setTimeout(() => sendRequest(letter), 300);
+        if (event.inputType === "deleteContentBackward") {
+            handleBackspace(text);
+            return;
+        }
+
+        // Debounce input to avoid excessive API calls
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            updateDisplayedImages(text);
+        }, 300); // Wait for 300ms after the last keystroke
     });
 
-    async function sendRequest(letter) {
-        try {
-            // Get selected color map
-            const selectedColor = colorPicker.value;
+    function updateTitle(text) {
+        if (!text) {
+            promptDisplay.style.display = "none";
+        } else {
+            promptDisplay.style.display = "block";
+            promptDisplay.textContent = `Generated Letters for: "${text}"`;
+            saveButton.style.display = "block";
+        }
+    }
 
+    async function updateDisplayedImages(text) {
+        if (!text) {
+            imageContainer.innerHTML = ""; // Clear everything when input is empty
+            generatedImages = { " ": createBlankImage() }; // Reset stored images, keep blank
+            return;
+        }
+
+        const selectedColor = colorPicker ? colorPicker.value : "gray_r";
+        console.log(`🔹 Updating images for: "${text}" with colormap "${selectedColor}"`);
+
+        for (let letter of text) {
+            if (!generatedImages[letter]) { // Only request new letters that haven't been generated
+                generatedImages[letter] = letter === " " ? createBlankImage() : await generateSingleLetter(letter, selectedColor);
+            }
+        }
+
+        renderImages(text); // Display stored images
+    }
+
+    function handleBackspace(text) {
+        // Remove deleted letters from the stored images (except spaces)
+        Object.keys(generatedImages).forEach((letter) => {
+            if (!text.includes(letter) && letter !== " ") {
+                delete generatedImages[letter];
+            }
+        });
+
+        renderImages(text);
+    }
+
+    async function generateSingleLetter(letter, selectedColor) {
+        try {
             const response = await fetch(GAN_PROXY_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -44,93 +125,112 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             const data = await response.json();
-
-            if (!data.success || !data.image) {
+            if (!data.success || !data.images || data.images.length === 0) {
                 throw new Error(data.error || "Invalid response from server.");
             }
 
-            promptDisplay.style.display = "block";
-            promptDisplay.textContent = `Generated Image for: "${letter}"`;
-            imageDisplay.src = `data:image/png;base64,${data.image}`;
-            imageDisplay.style.display = "block";
-            saveButton.style.display = "block";
-
+            console.log(`✔ Image generated for letter: ${letter}`);
+            return data.images[0]; // Return first image
         } catch (error) {
-            console.error("Error:", error);
-            alert("An error occurred while generating the image.");
+            console.error(`❌ Failed to generate image for ${letter}:`, error);
+            return createBlankImage(); // Fallback to blank image if there's an error
         }
     }
 
-    // Function to save generated image
+    function renderImages(text) {
+        imageContainer.innerHTML = ""; // Clear previous images only if needed
+
+        for (let letter of text) {
+            if (generatedImages[letter]) {
+                const img = new Image();
+                img.src = `data:image/png;base64,${generatedImages[letter]}`;
+                img.classList.add("gen-image");
+                img.alt = `Generated: ${letter}`;
+                imageContainer.appendChild(img);
+            }
+        }
+    }
     saveButton.addEventListener("click", async function () {
-        if (!imageDisplay.src || imageDisplay.style.display === "none") {
-            alert("No image to save!");
+        let text = promptDisplay.textContent.replace("Generated Letters for: ", "").trim();
+        text = text.replace(/^"|"$/g, ''); // Remove surrounding quotes
+    
+        if (!text) {
+            alert("Invalid input! Please enter text.");
             return;
         }
-
-        let letter = promptDisplay.textContent.replace("Generated Image for: ", "").trim();
-        letter = letter.replace(/^"|"$/g, ''); // Remove surrounding quotes
-
-        if (!/^[A-Z]$/.test(letter)) {
-            alert("Invalid letter! Please enter a single letter from A-Z.");
-            return;
-        }
-
-        // Get the selected colormap for saving the image
+    
         const selectedColor = colorPicker.value;
-
-        // Step 2: Convert image to Base64
+    
         try {
-            const response = await fetch(imageDisplay.src);
-            const blob = await response.blob();
-            const reader = new FileReader();
-
-            reader.readAsDataURL(blob);
-            reader.onloadend = async function () {
-                const base64Image = reader.result.split(",")[1]; // Extract base64 part
-
-                // Step 3: Send letter, Base64 image, and colormap to the server
-                try {
-                    const saveResponse = await fetch("/save", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            letter: letter,
-                            image: base64Image,
-                            cmap: selectedColor  // Include the colormap in the save request
-                        })
-                    });
-
-                    const data = await saveResponse.json();
-                    if (data.success) {
-                        alert(`Letter "${letter}" and its image saved successfully!`);
-                    } else {
-                        alert(`Error: ${data.error}`);
-                    }
-                } catch (error) {
-                    console.error("Database request failed:", error);
-                    alert("An error occurred while saving to the database.");
-                }
-            };
+            // Step 1: Merge images before saving
+            const base64Image = await mergeImagesForSaving(text);
+    
+            if (!base64Image) {
+                alert("Error generating image!");
+                return;
+            }
+    
+            console.log("🔹 Sending Image Data:", base64Image.length > 100 ? base64Image.substring(0, 100) + "..." : base64Image);
+    
+            // Step 2: Send the merged image to the server
+            const saveResponse = await fetch("/save", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text: text,
+                    image: base64Image,  // Merged image
+                    cmap: selectedColor  
+                })
+            });
+    
+            const data = await saveResponse.json();
+            if (data.success) {
+                alert(`Saved successfully!`);
+            } else {
+                console.error("❌ Save failed:", data.error);
+                alert(`Error: ${data.error}`);
+            }
+    
         } catch (error) {
-            console.error("Failed to fetch image data:", error);
-            alert("An error occurred while processing the image.");
+            console.error("❌ Failed to save:", error);
+            alert("An error occurred while saving.");
         }
     });
-});
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    const dropdownButton = document.getElementById("color-dropdown");
-    const dropdownItems = document.querySelectorAll("#color-options .dropdown-item");
-
-    dropdownItems.forEach(item => {
-        item.addEventListener("click", function(event) {
-            event.preventDefault();
-            const selectedColor = this.getAttribute("data-value");
-            dropdownButton.textContent = this.textContent; // Update button text
-            dropdownButton.setAttribute("data-selected", selectedColor);
-            console.log("Selected Colormap:", selectedColor); // Debugging
+    
+    // Function to merge letter images into a single image before saving
+    async function mergeImagesForSaving(text) {
+        return new Promise((resolve) => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+    
+            const imgWidth = 28;
+            const imgHeight = 28;
+            const spacing = 3; 
+    
+            const totalWidth = text.length * (imgWidth + spacing) - spacing;
+            canvas.width = totalWidth;
+            canvas.height = imgHeight;
+    
+            let xOffset = 0;
+            let loadedImages = 0;
+    
+            text.split("").forEach((letter) => {
+                const img = new Image();
+                img.src = `data:image/png;base64,${generatedImages[letter]}`;
+    
+                img.onload = function () {
+                    ctx.drawImage(img, xOffset, 0, imgWidth, imgHeight);
+                    xOffset += imgWidth + spacing;
+                    loadedImages++;
+    
+                    if (loadedImages === text.length) {
+                        console.log("✅ Final merged sentence image ready for saving!");
+                        resolve(canvas.toDataURL("image/png").split(",")[1]); // Convert to Base64
+                    }
+                };
+            });
         });
-    });
+    }
+    
+
 });

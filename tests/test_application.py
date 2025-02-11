@@ -143,7 +143,7 @@ def test_history_performance(client, app):
     inserted_entries = []  # To store references to the inserted entries
     with app.app_context():
         dummy_image_data = base64.b64encode(b"DummyImageData").decode('utf-8')
-        for _ in range(100000):
+        for _ in range(200000):
             entry = Entry(
                 user_id=1,
                 letter=random.choice(string.ascii_uppercase),
@@ -168,10 +168,58 @@ def test_history_performance(client, app):
     # Assert that the response time is within an acceptable range (e.g., < 1 seconds)
     assert response_time < 1, f"Response time was too slow: {response_time:.2f} seconds"
 
-    # Cleanup: Delete only the mock entries inserted during the test
-    with app.app_context():
-        # Use the IDs or timestamps of the inserted entries to delete only those
-        for entry in inserted_entries:
-            db.session.delete(entry)  # Delete each inserted entry individually
+    # # Cleanup: Delete only the mock entries inserted during the test
+    # with app.app_context():
+    #     # Use the IDs or timestamps of the inserted entries to delete only those
+    #     for entry in inserted_entries:
+    #         db.session.delete(entry)  # Delete each inserted entry individually
 
-        db.session.commit()
+    #     db.session.commit()
+
+# --------------------------------------------------------------------------------------------------------------------------#
+# Test 4: Validity Testing of duplicate users registering 
+# This test is to check whether the regsiter form rejects duplicate usernames or emails and return appropriate error messages.
+@pytest.mark.parametrize("payload, expected_error", [
+    ({
+        "username": "admin",  # Pre-existing username
+        "email": "admin123@gmail.com",
+        "password": "password",
+        "confirm_password": "password"
+    }, "Username already exists"),
+    ({
+        "username": "admin123",
+        "email": "admin@gmail.com",  # Pre-existing email
+        "password": "password123",
+        "confirm_password": "password123"
+    }, "Email already exists"),
+])
+def test_api_register(client,payload, expected_error):
+
+    # Test the API
+    response = client.post('/api/register', json=payload)
+    assert response.status_code == 400
+    response_data = response.get_json()
+    assert expected_error in response_data.get("error", "")
+
+
+# -------------------------------------------------------------------------------------------------------------------------------------------------------#
+# Test 6: Validity Testing for retrieval of history from database where user does not exist
+# Ensure that when provided with a non-existent user_id, return an appropriate error message and status code.
+@pytest.mark.parametrize("user_id, expected_error, expected_status", [
+    (999, "User not found", 404),  # Non-existent user ID
+])
+
+def test_get_user_history_expected_failures(client, user_id, expected_error, expected_status):
+    # Mock login for testing
+    with client.session_transaction() as session:
+        session['_user_id'] = 1  # Mock user ID
+
+    # Send a GET request to the history API
+    response = client.get(f'/api/history/{user_id}')
+    
+    # Validate the response
+    assert response.status_code == expected_status, f"Expected status {expected_status}, got {response.status_code}"
+    response_data = response.get_json()
+    assert response_data is not None, "Expected a JSON response"
+    assert "error" in response_data, "Expected 'error' key in response"
+    assert response_data["error"] == expected_error, f"Unexpected error message: {response_data['error']}"

@@ -51,21 +51,7 @@
             </div>
         </div>
 
-        <!-- Display Most and Least Predicted Letters -->
-        <div class="col-md-4">
-            <div class="metric-card">
-                <h2>{{ most_predicted_letter }}</h2>
-                <p>Most Predicted Letter</p>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="metric-card">
-                <h2>{{ least_predicted_letter }}</h2>
-                <p>Least Predicted Letter</p>
-            </div>
-        </div>
-
+       
         <div class="col-md-4">
             <div class="metric-card">
                 <h2>
@@ -99,9 +85,9 @@
     {% if favorite_entries %}
     <div class="row row-cols-1 row-cols-md-3 g-4 mt-3">
         {% for entry in favorite_entries %}
-        <div class="col">
+        <div class="col-12">
             <div class="card shadow-sm">
-                <img src="data:image/png;base64,{{ entry.image_data }}" class="card-img-top" alt="Favorite Image">
+                <img src="data:image/png;base64,{{ entry.image_data }}" class="favourite-image" alt="Favorite Image">
                 <div class="card-body text-center">
                     <h5 class="card-title">Letter: {{ entry.letter }}</h5>
                     <p class="card-text text-muted">Predicted on: {{ entry.timestamp.strftime('%-d %b %Y') }}</p>
@@ -111,7 +97,7 @@
         {% endfor %}
     </div>
     {% else %}
-    <p class="favourite-text text-muted mt-3">You haven't marked any predictions as favorites yet.</p>
+    <p class="favourite-text text-muted mt-3 mb-5">You haven't marked any predictions as favorites yet.</p>
     {% endif %}
 </div>
 
@@ -145,9 +131,9 @@
             positions[i + 1] = (Math.random() - 0.5) * 12;
             positions[i + 2] = (Math.random() - 0.5) * 12;
 
-            velocities[i] = (Math.random() - 0.5) * 0.02; // Faster movement
-            velocities[i + 1] = (Math.random() - 0.5) * 0.05;
-            velocities[i + 2] = (Math.random() - 0.5) * 0.05;
+            velocities[i] = (Math.random() - 0.5) * 0.001; // Faster movement
+            velocities[i + 1] = (Math.random() - 0.5) * 0.005;
+            velocities[i + 2] = (Math.random() - 0.5) * 0.005;
         }
 
         particlesGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
@@ -157,7 +143,7 @@
         const circleTexture = textureLoader.load('https://threejs.org/examples/textures/sprites/circle.png');
 
         const particlesMaterial = new THREE.PointsMaterial({
-            size: 0.07,
+            size: 0.02,
             transparent: true,
             opacity: 0.8,
             map: circleTexture,  // Apply circular texture
@@ -183,7 +169,7 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            let time = Date.now() * 0.002;
+            let time = Date.now() * 0.02; 
 
             // Move Particles Faster
             const positions = particlesMesh.geometry.attributes.position.array;

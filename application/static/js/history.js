@@ -168,7 +168,7 @@ function loadEntries(page) {
                 const card = document.createElement('div');
                 card.classList.add('prediction-card');
                 card.innerHTML = `
-                    <img src="data:image/png;base64,${entry.image_data}" class="prediction-image" alt="Generated Letter ${entry.letter}">
+                    <img src="data:image/png;base64,${entry.image_data}" class="prediction-image" alt="Generated Text ${entry.letter}">
                     <div class="card-content">
                         <div class="card-header">
                             <div class="row">

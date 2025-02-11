@@ -1,8 +1,10 @@
-<!-- Inherits from layout.html -->
 {% extends "layout.html" %}
 
 {% block content %}
+<!-- Three.js Canvas for Background -->
+
 <div class="container-fluid vh-100 d-flex flex-column">
+    <div id="threejs-background" class="position-absolute w-100 h-100"></div> <!-- Ensure it covers the full background -->
     <div class="row flex-grow-1 h-100">
         <div class="col-sm-12 col-md-6 d-flex flex-column align-items-start justify-content-center px-5">
             <h1 class="home-title" id="typing-title"></h1>
@@ -21,6 +23,14 @@
 
 <!-- Add CSS to ensure the container is visible -->
 <style>
+    #threejs-background {
+        position: fixed; /* Fix the position to cover the background */
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1; /* Ensure it stays in the background */
+    }
     #threejs-container {
         width: 100%;
         height: 100%;
@@ -39,8 +49,9 @@
         const SubtitleElement = document.getElementById('typing-subtitle');
         typeWriter(SubtitleElement, "How can I help you today?");
         initThreeJS(); // Initialize Three.js after DOM is loaded
-        initRippleBackground(); // Initialize the ripple background animation
+        background3js();
     });
+
     function typeWriter(element, text, speed = 75) {
         let i = 0;
         function type() {
@@ -52,68 +63,120 @@
         }
         type();
     }
-    
-
 
     function initThreeJS() {
-             // Select the container
-             const container = document.getElementById("threejs-container");
+        const container = document.getElementById("threejs-container");
+        if (!container) return;
+        container.innerHTML = "";  // Clear any previous content
 
-// Ensure it has a size
-if (!container) return;
-container.innerHTML = "";  // Clear any previous content
+        // Create scene
+        const scene = new THREE.Scene();
 
-// Create scene
-const scene = new THREE.Scene();
+        // Create camera (PerspectiveCamera)
+        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.z = 5;
 
-// Create camera (PerspectiveCamera)
-const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-camera.position.z = 5;
+        // Create WebGL Renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(renderer.domElement);
 
-// Create WebGL Renderer
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setSize(container.clientWidth, container.clientHeight);
-container.appendChild(renderer.domElement);
+        // ===================
+        // 1. Rotating Torus Knot 🌌
+        // ===================
+        const torusGeometry = new THREE.TorusKnotGeometry(1.1, 0.4, 100, 16);
+        const torusMaterial = new THREE.MeshStandardMaterial({ color: 0x815fc0, metalness: 0.6, roughness: 0.2 });
+        const torus = new THREE.Mesh(torusGeometry, torusMaterial);
+        torus.position.y = 0.8
+        scene.add(torus);
 
-// ===================
-// 1. Rotating Torus Knot 🌌
-// ===================
-const torusGeometry = new THREE.TorusKnotGeometry(1.1, 0.4, 100, 16);
-const torusMaterial = new THREE.MeshStandardMaterial({ color: 0x815fc0, metalness: 0.6, roughness: 0.2 });
-const torus = new THREE.Mesh(torusGeometry, torusMaterial);
-torus.position.y = 0.8
-scene.add(torus);
+        // Add ambient lighting (to ensure visibility)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
 
+        // Add point lighting
+        const light = new THREE.PointLight(0xffffff, 1.5);
+        light.position.set(2, 2, 5);
+        scene.add(light);
 
-// Add ambient lighting (to ensure visibility)
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
 
-// Add point lighting
-const light = new THREE.PointLight(0xffffff, 1.5);
-light.position.set(2, 2, 5);
-scene.add(light);
+            // Rotate Torus
+            torus.rotation.x += 0.01;
+            torus.rotation.y += 0.01;
 
-// Animation Loop
-function animate() {
-    requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
 
-    // Rotate Torus
-    torus.rotation.x += 0.01;
-    torus.rotation.y += 0.01;
+        animate();
 
-    renderer.render(scene, camera);
-}
+        // Handle Resizing
+        window.addEventListener("resize", () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    }
 
-animate();
+    function background3js() {
+        const container = document.getElementById("threejs-background");
 
-// Handle Resizing
-window.addEventListener("resize", () => {
-    camera.aspect = container.clientWidth / container.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(container.clientWidth, container.clientHeight);
-});
-}
+        // Three.js Scene Setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById("threejs-background").appendChild(renderer.domElement);
+
+        // Particle System
+        const particleCount = 200; // More particles for density
+        const particlesGeometry = new THREE.SphereGeometry(0.05, 16, 16);
+        const positions = new Float32Array(particleCount * 3);
+        const velocities = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 10;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+            velocities[i] = (Math.random() - 0.5) * 0.02; // Faster movement
+            velocities[i + 1] = (Math.random() - 0.5) * 0.05;
+            velocities[i + 2] = (Math.random() - 0.5) * 0.05;
+        }
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        particlesGeometry.setAttribute("velocity", new THREE.BufferAttribute(velocities, 3));
+        const textureLoader = new THREE.TextureLoader();
+        const circleTexture = textureLoader.load('https://threejs.org/examples/textures/sprites/circle.png');
+
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0x3A393A, 
+            size: 0.03, 
+            map: circleTexture,  // Apply circular texture
+            depthTest: false,  // Ensure particles don't overlap badly
+            blending: THREE.AdditiveBlending,
+        });
+        const particleMesh = new THREE.Points(particlesGeometry, particleMaterial);
+        scene.add(particleMesh);
+
+        // Camera Position
+        camera.position.z = 5;
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            particleMesh.rotation.y += 0.001;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle Window Resize
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    }
 </script>
 
 {% endblock %}

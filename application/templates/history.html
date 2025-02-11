@@ -70,17 +70,31 @@
     document.getElementById("threejs-container").appendChild(renderer.domElement);
     
     // Particle System
-    const particles = new THREE.BufferGeometry();
-    const particleCount = 500;
+    const particleCount = 200; // More particles for density
+    const particlesGeometry = new THREE.SphereGeometry(0.05, 16, 16);
     const positions = new Float32Array(particleCount * 3);
+    const velocities = new Float32Array(particleCount * 3);
+
     for (let i = 0; i < particleCount; i++) {
         positions[i * 3] = (Math.random() - 0.5) * 10;
         positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
         positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+        velocities[i] = (Math.random() - 0.5) * 0.02; // Faster movement
+            velocities[i + 1] = (Math.random() - 0.5) * 0.05;
+            velocities[i + 2] = (Math.random() - 0.5) * 0.05;
     }
-    particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const particleMaterial = new THREE.PointsMaterial({ color: 0x717071, size: 0.05 });
-    const particleMesh = new THREE.Points(particles, particleMaterial);
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    particlesGeometry.setAttribute("velocity", new THREE.BufferAttribute(velocities, 3));
+    const textureLoader = new THREE.TextureLoader();
+    const circleTexture = textureLoader.load('https://threejs.org/examples/textures/sprites/circle.png');
+
+    const particleMaterial = new THREE.PointsMaterial({
+         color: 0x3D3C3E, 
+         size: 0.03 , 
+         map: circleTexture,  // Apply circular texture
+        depthTest: false,  // Ensure particles don't overlap badly
+        blending: THREE.AdditiveBlending,});
+    const particleMesh = new THREE.Points(particlesGeometry, particleMaterial);
     scene.add(particleMesh);
     
     // Camera Position
@@ -103,10 +117,7 @@
 </script>
 
 <style>
-    body, html {
-        margin: 0;
-        overflow: hidden;
-    }
+
     #threejs-container {
         position: fixed;
         top: 0;

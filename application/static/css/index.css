@@ -395,8 +395,7 @@ body {
     margin: 20px auto 0 auto;  /* Top: 20px, Right & Left: auto, Bottom: 0 */
     display: block;  /* Ensures the image is treated as a block element */
     object-fit: cover;
-    border: 7px solid #000000;
-}
+  }
 
   
   /* Card Content */

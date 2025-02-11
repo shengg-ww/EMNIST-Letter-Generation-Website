@@ -2,35 +2,25 @@
 
 {% block content %}
 <div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
-    <!-- Title Section -->
-    <div class="row w-100">
-        <div class="col-12 text-center">
-            <h1 class="display-5 fw-bold" style="color: white;">Generate EMNIST Letters</h1>
-            
+    <h1 class="gen-title text-white">Generate EMNIST Letters</h1>    
+    <div id="threejs-background" class="position-absolute w-100 h-100"></div>
+
+    <!-- Chatbox -->
+    <div class="chatbox rounded shadow-sm w-100">
+        <div class="messages mb-4 p-3 text-center" id="chat-messages" style="height: 350px; overflow-y: auto;">
+            <h2 class="text-white image-title" id="prompt-display"></h2>
+            <div id="generated-images-container" class="d-flex flex-wrap justify-content-left"
+               ></div>
         </div>
-    </div>
 
+        
     <!-- Chat UI Section -->
-    <div class="row flex-grow-1 w-100 d-flex justify-content-center align-items-center">
-  
-        <!-- Chatbox -->
-        <div class="chatbox p-4 rounded shadow-sm w-100">
-            <!-- Messages -->
-            <div class="messages mb-4 p-3 text-center" id="chat-messages" style="height: 300px; overflow-y: auto;">
-                <h2 class="text-white image-title" id="prompt-display" ></h2>
-                <img
-                    class="gen-image"
-                    id="generated-image"
-                    src=""
-                    alt="Generated EMNIST Image"
-                    style="border: 1px solid #ddd; border-radius: 8px; max-width: 50%; margin-top: 20px; display: none;"
-                />
-            </div>
-
-                    <!-- Color Picker Section (Scrollable Dropdown) -->
-        <div class="mb-5">
+    <div class="row ">
+        <div class="col-6">
+            <!-- Color Picker -->
+        <div class="mb-3 mt-3 text-center">
             <label for="color-picker" class="text-white">Select Color Scheme:</label>
-            <select id="color-picker" class="form-control scrollable-dropdown">
+            <select id="color-picker" class="form-control scrollable-dropdown w-auto mx-auto">
                 <option value="gray_r">Black (Default)</option>
                 <option value="gray">Inverse Background</option>
                 <option value="Blues">Blue</option>
@@ -49,31 +39,128 @@
                 <option value="hsv">HSV</option>
             </select>
         </div>
-
-
-            <!-- Save Image Button -->
-            <button id="save-button" class="btn btn-success mt-3" style="display: none; margin-bottom: 20px;">Save Image</button>
-
-            <!-- Input Section -->
-            <form id="input-form" class="d-flex">
-                <input
-                    type="text"
-                    name="prompt"
-                    id="chat-input"
-                    class="form-control me-3"
-                    placeholder="Enter a letter (A-Z)"
-                    required
-                    maxlength="1"
-                    style="height: 60px; font-size: 1.2rem; text-transform: uppercase; text-align: center;"
-                />
-            </form>
         </div>
+        <div class="col-6">
+              <!-- Save Image Button -->
+        <button id="save-button" class="btn btn-success mt-3" style="display: none; margin-bottom: 20px;">Save Image</button>
+        </div>
+        
+          </div>
+        <!-- Input Section -->
+        <form id="input-form" class="d-flex">
+            <input
+                type="text"
+                name="prompt"
+                id="chat-input"
+                class="form-control me-3"
+                placeholder="Enter letters or words"
+                required
+                style="height: 60px; font-size: 1.2rem; text-transform: uppercase; text-align: center;"
+            />
 
-        <div class="animated-blob3"></div>
-    
-    </div>
+        </form>
+
+   
 </div>
-
+</div>
 <!-- Include External JavaScript -->
 <script src="{{ url_for('static', filename='js/generate.js') }}"></script>
+
+<!-- Include Three.js Background -->
+<script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js';
+
+    function initThreeJS() {
+        const container = document.getElementById("threejs-background");
+        if (!container) return;
+
+        // Scene, Camera, Renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+
+        // Particles
+        const particleCount = 200;
+        const particlesGeometry = new THREE.SphereGeometry(0.05, 16, 16);
+        const positions = new Float32Array(particleCount * 3);
+        const velocities = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 12;
+            positions[i + 1] = (Math.random() - 0.5) * 12;
+            positions[i + 2] = (Math.random() - 0.5) * 12;
+
+            velocities[i] = (Math.random() - 0.5) * 0.001;
+            velocities[i + 1] = (Math.random() - 0.5) * 0.005;
+            velocities[i + 2] = (Math.random() - 0.5) * 0.005;
+        }
+
+        particlesGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        particlesGeometry.setAttribute("velocity", new THREE.BufferAttribute(velocities, 3));
+
+        const textureLoader = new THREE.TextureLoader();
+        const circleTexture = textureLoader.load('https://threejs.org/examples/textures/sprites/circle.png');
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.05,
+            transparent: true,
+            opacity: 0.8,
+            map: circleTexture,
+            depthTest: false,
+            blending: THREE.AdditiveBlending,
+        });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const positions = particlesMesh.geometry.attributes.position.array;
+            const velocities = particlesMesh.geometry.attributes.velocity.array;
+
+            for (let i = 0; i < positions.length; i += 3) {
+                positions[i] += velocities[i];
+                positions[i + 1] += velocities[i + 1];
+                positions[i + 2] += velocities[i + 2];
+
+                if (Math.abs(positions[i]) > 12) positions[i] = (Math.random() - 0.5) * 12;
+                if (Math.abs(positions[i + 1]) > 12) positions[i + 1] = (Math.random() - 0.5) * 12;
+                if (Math.abs(positions[i + 2]) > 12) positions[i + 2] = (Math.random() - 0.5) * 12;
+            }
+
+            particlesMesh.geometry.attributes.position.needsUpdate = true;
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    }
+
+    document.addEventListener('DOMContentLoaded', initThreeJS);
+</script>
+
+<style>
+    #threejs-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: black;
+    }
+
+ 
+
+    .gen-image {
+        max-width: 90px;
+        display: inline-block;
+        position:relative;
+        left:10px;
+
+    }
+</style>
 {% endblock %}

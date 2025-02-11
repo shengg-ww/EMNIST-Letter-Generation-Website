@@ -30,7 +30,8 @@ from sqlalchemy import func, desc, case
 @app.route('/index')
 def index():
     return render_template('index.html', title="SW Labs", css_file='css/index.css', current_page="index")
-
+# TensorFlow Serving API URL
+GAN_SERVER_URL = 'https://ca2-daaa2b02-2309123-limshengwei.onrender.com/v1/models/saved_cgan:predict'
 
 # <---------------------------------------------- FLASK-LOGIN --------------------------------------------<
 # Initialize Flask-Login
@@ -63,6 +64,18 @@ def login():
         if user and check_password_hash(user.password, password):
             login_user(user)  # Log the user in
             flash("Login successful!", "success")
+                    # Construct payload for TensorFlow Serving
+            payload = {
+                "signature_name": "serving_default",
+                "instances": [{
+                    "input_13": np.random.normal(0, 1, 100).tolist(),  # Shape: (100,),  # Noise input
+                    "input_12": [0.0]  # Class index
+                }]
+            }
+
+            # Send request to TensorFlow Serving to speed up speed later
+            response = requests.post(GAN_SERVER_URL, json=payload)
+            response.raise_for_status()  # Raise error for bad responses
             return redirect(url_for('home'))  # Redirect 
         else:
             form.username.errors.append("Invalid username or password")  
@@ -138,111 +151,116 @@ def generate():
     """
     return render_template('generate.html', title='Generate', css_file='css/main.css', current_page='generate')
 
-# TensorFlow Serving API URL
-GAN_SERVER_URL = 'https://ca2-daaa2b02-2309123-limshengwei.onrender.com/v1/models/saved_cgan:predict'
 
-@app.route('/proxy_generate', methods=['GET', 'POST'])
+
+@app.route('/proxy_generate', methods=['POST'])
 def proxy_generate():
     try:
-        # Parse input JSON from frontend
         data = request.get_json()
         if not data or 'prompt' not in data:
             return jsonify({"success": False, "error": "Invalid input"}), 400
 
-        # Validate input letter
         prompt = data['prompt'].strip().upper()
-        if len(prompt) != 1 or not prompt.isalpha():
-            return jsonify({"success": False, "error": "Input must be a single letter (A-Z)."}), 400
-        
-        # Get the color map (default to 'gray_r' if not provided)
-        cmap = data.get('cmap', 'gray_r')
+        if not all(char.isalpha() or char.isspace() for char in prompt):
+            return jsonify({"success": False, "error": "Input must contain only letters (A-Z)."}), 400
 
-        # Validate colormap
-        available_cmaps = plt.colormaps()  # Get list of available colormaps
+        cmap = data.get('cmap', 'gray_r')
+        available_cmaps = plt.colormaps()
         if cmap not in available_cmaps:
             return jsonify({"success": False, "error": f"Invalid colormap. Choose from {available_cmaps}."}), 400
 
-        # Convert letter to class index based on your model's convention
-        if prompt == "Z":
-            class_index = [0.0]
-        else:
-            class_index = [float(ord(prompt) - ord('A') + 1)] 
+        generated_images = []
 
-        z_input = np.random.normal(0, 1, 100).tolist()  # Shape: (100,)
+        for letter in prompt:
+            if letter == " ":
+                # Generate a blank image for spaces
+                blank_image = np.ones((28, 28)) * 255  # White blank image
+                img_bytes = io.BytesIO()
+                plt.imsave(img_bytes, blank_image, cmap=cmap, format='png')
+                img_bytes.seek(0)
+                base64_image = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
+                generated_images.append(base64_image)
+                continue
 
-        # Construct payload for TensorFlow Serving
-        payload = {
-            "signature_name": "serving_default",
-            "instances": [{
-                "input_13": z_input,  # Noise input
-                "input_12": class_index  # Class index
-            }]
-        }
+            class_index = [float(ord(letter) - ord('A') + 1)] if letter != "Z" else [0.0]
+            z_input = np.random.normal(0, 1, 100).tolist()
 
-        # Send request to TensorFlow Serving
-        response = requests.post(GAN_SERVER_URL, json=payload)
-        response.raise_for_status()  # Raise error for bad responses
-        result = response.json()
+            payload = {
+                "signature_name": "serving_default",
+                "instances": [{"input_13": z_input, "input_12": class_index}]
+            }
 
-        if "predictions" not in result or not result["predictions"]:
-            return jsonify({"success": False, "error": "Invalid response from TensorFlow Serving"}), 500
+            response = requests.post(GAN_SERVER_URL, json=payload)
+            response.raise_for_status()
+            result = response.json()
 
-        # Extract generated image tensor and reshape
-        generated_image = np.array(result["predictions"][0]).reshape(28, 28)
+            if "predictions" not in result or not result["predictions"]:
+                return jsonify({"success": False, "error": "Invalid response from TensorFlow Serving"}), 500
 
-        # Convert image to Base64 for frontend display
-        img_bytes = io.BytesIO()
-        plt.imsave(img_bytes, generated_image, cmap=cmap, format='png')
-        img_bytes.seek(0)
-        base64_image = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
+            generated_image = np.array(result["predictions"][0]).reshape(28, 28)
 
-        # Return Base64 encoded image
-        return jsonify({"success": True, "image": base64_image})
+            img_bytes = io.BytesIO()
+            plt.imsave(img_bytes, generated_image, cmap=cmap, format='png')
+            img_bytes.seek(0)
+            base64_image = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
+
+            generated_images.append(base64_image)
+
+        return jsonify({"success": True, "images": generated_images})
 
     except requests.exceptions.RequestException as e:
         return jsonify({"success": False, "error": f"TensorFlow Serving error: {str(e)}"}), 500
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-        
+    
+    
+
 @app.route("/save", methods=["POST"])
 @login_required  # Ensure the user is logged in
-def save_letter():
+def save_text():
     data = request.json
-    letter = data.get("letter", "").strip().upper()  # Strip spaces and enforce uppercase
-    image_base64 = data.get("image")  # Base64 encoded image from frontend
-    colormap = data['cmap']  # Receive the colormap
+    text = data.get("text", "").strip().upper()  # Store full text, not just one letter
+    image_base64 = data.get("image")  # Base64 encoded merged image from frontend
+    colormap = data.get("cmap", "").strip()  # Receive the colormap
 
-     # Remove unnecessary surrounding quotes if they exist
-    if letter.startswith('"') and letter.endswith('"'):
-        letter = letter[1:-1]
-
-    if not letter or not letter.isalpha() or len(letter) != 1:
-        return jsonify({"success": False, "error": "Invalid input"}), 400
-
-    # Get the logged-in user ID
+    # Ensure user is authenticated
     user_id = current_user.id  
-
-    # Ensure user_id is not None
     if not user_id:
-        return jsonify({"success": False, "error": "User not authenticated"}), 403  # Forbidden
-    
-    if not image_base64:
-        return jsonify({"success": False, "error": "No image data provided"}), 400
-    
+        return jsonify({"success": False, "error": "User not authenticated"}), 403  
+
+    # Validate input
+    if not text or not image_base64:
+        print(text)
+        print(image_base64)
+        return jsonify({"success": False, "error": "Missing text or image data"}), 400
+
     if not colormap:
-        return jsonify({"success": False, "error": "No color map provided"}), 400
-    
-    # Validate the colormap (ensure it's a valid colormap)
-    available_cmaps = plt.colormaps()  # Get list of available colormaps
+        return jsonify({"success": False, "error": "No colormap provided"}), 400
+
+    # Validate colormap (ensure it's a valid colormap)
+    available_cmaps = plt.colormaps()
     if colormap not in available_cmaps:
         return jsonify({"success": False, "error": f"Invalid colormap. Choose from {available_cmaps}."}), 400
 
-    # Save new entry
-    new_entry = Entry(user_id=user_id, letter=letter,image_data=image_base64, colormap=colormap,  timestamp=datetime.utcnow())
-    db.session.add(new_entry)
-    db.session.commit()
+    # Remove unnecessary surrounding quotes
+    text = text.replace('"', '')
 
-    return jsonify({"success": True, "message": "Saved successfully!"}), 200
+    try:
+        # Save new entry in the database (no need to save as a PNG)
+        new_entry = Entry(
+            user_id=user_id,
+            letter=text,  # Store full word/sentence
+            image_data=image_base64,  # Store Base64 image directly
+            colormap=colormap,
+            timestamp=datetime.utcnow()
+        )
+        db.session.add(new_entry)
+        db.session.commit()
+
+        return jsonify({"success": True, "message": f'Text "{text}" saved successfully!'}), 200
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
     
 
 
@@ -415,8 +433,6 @@ def profile():
                            total_predictions=total_predictions,
                            total_favorites=total_favorites,
                            favorite_percentage=favorite_percentage,
-                           most_predicted_letter=most_predicted_letter,
-                           least_predicted_letter=least_predicted_letter,
                            first_prediction_date=first_prediction_date,
                            last_prediction_date=last_prediction_date,
                            most_common_colormap=most_common_colormap,
@@ -556,3 +572,58 @@ def api_history():
             'current_page': pagination.page
         })
 
+@app.route('/api/register', methods=['POST'])
+def api_register():
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        form = RegisterForm(data=data)
+
+        if not form.validate():
+            return jsonify({"errors": form.errors}), 400
+
+        # Check for duplicate username or email
+        existing_user = User.query.filter(
+            (User.username == form.username.data) | (User.email == form.email.data)
+        ).first()
+        if existing_user:
+            if existing_user.username == form.username.data:
+                return jsonify({"error": "Username already exists"}), 400
+            if existing_user.email == form.email.data:
+                return jsonify({"error": "Email already exists"}), 400
+
+        # Simulate registration (do not persist during testing)
+        new_user = User(
+            username=form.username.data,
+            email=form.email.data,
+            password=form.password.data 
+        )
+        return jsonify({"message": "User registered successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+@app.route('/api/history/<int:user_id>', methods=['GET'])
+@login_required
+def get_user_history(user_id):
+    try:
+        # Use Session.get() instead of Query.get()
+        user = db.session.get(User, user_id)  # Updated for SQLAlchemy 2.0
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        history = Entry.query.filter_by(user_id=user_id).all()
+        if not history:
+            return jsonify({"error": "No prediction history available"}), 404
+
+        history_data = [
+            {"id": entry.id, "prediction": entry.prediction, "date_created": entry.date_created}
+            for entry in history
+        ]
+        return jsonify({"user": user.username, "history": history_data}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500

@@ -371,19 +371,28 @@ margin-top:30px;
   }
 }
 
+
 .chatbox {
   max-width: 700px;
-  max-height:1000px;
+  max-height:300px;
+
   background-color: rgba(0, 0, 0, 0.7); /* Black with transparency */
   border-radius: 12px;
   position:relative;
-  bottom:120px;
+  bottom:155px;
   color: rgb(150, 43, 43);
 }
-
+.gen-title{
+  position:relative;
+  bottom:230px;
+  font-size:3rem;
+}
 .messages {
   border: 1px solid rgba(255, 255, 255, 0.3); /* Light border for contrast */
+  width:800px;
   border-radius: 10px;
+  overflow-x: hidden;
+  overflow-y: auto;
   background-color: rgba(0, 0, 0, 0.6); /* Slightly darker transparent black */
   color: white;
   overflow-y: auto;
