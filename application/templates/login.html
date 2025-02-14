@@ -3,7 +3,7 @@
 
 <div class="login-container">
     <h2 class="login-title text-center">Login</h2>
-    <form method="post" action="{{ url_for('login') }}" class="w-100">
+    <form method="post" action="{{ url_for('login') }}" class="w-100" id="login-form">
         {{ form.hidden_tag() }}
 
         <!-- Username Field -->
@@ -29,9 +29,11 @@
             <a href="/forget_password" class="text-primary">Forgot Password?</a>
         </div>
 
-
         <!-- Submit Button -->
-        <button type="submit" class="btn w-100 mb-4 user-button">{{ form.submit.label.text }}</button>
+        <button type="submit" class="btn w-100 mb-4 user-button" id="login-button">
+            <span id="login-text">{{ form.submit.label.text }}</span>
+            <span id="login-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        </button>
 
         <!-- Register Link -->
         <p class="text-center mt-3">
@@ -39,5 +41,18 @@
         </p>
     </form>
 </div>
+
+<script>
+document.getElementById("login-form").addEventListener("submit", function() {
+    let loginButton = document.getElementById("login-button");
+    let loginText = document.getElementById("login-text");
+    let loginSpinner = document.getElementById("login-spinner");
+
+    // Disable the button and show the spinner
+    loginButton.disabled = true;
+    loginText.classList.add("d-none");
+    loginSpinner.classList.remove("d-none");
+});
+</script>
 
 {% endblock %}

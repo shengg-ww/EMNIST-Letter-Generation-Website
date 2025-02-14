@@ -24,6 +24,8 @@ import io  #
 import matplotlib.pyplot as plt  # 
 from collections import Counter
 from sqlalchemy import func, desc, case
+import asyncio
+import aiohttp
 
 #Handles http://127.0.0.1:5000/
 @app.route('/')
@@ -37,6 +39,8 @@ GAN_SERVER_URL = 'https://ca2-daaa2b02-2309123-limshengwei.onrender.com/v1/model
 # Initialize Flask-Login
 login_manager = LoginManager(app)
 login_manager.login_view = 'index'
+
+
 
 
 @login_manager.user_loader
@@ -64,18 +68,7 @@ def login():
         if user and check_password_hash(user.password, password):
             login_user(user)  # Log the user in
             flash("Login successful!", "success")
-                    # Construct payload for TensorFlow Serving
-            payload = {
-                "signature_name": "serving_default",
-                "instances": [{
-                    "input_13": np.random.normal(0, 1, 100).tolist(),  # Shape: (100,),  # Noise input
-                    "input_12": [0.0]  # Class index
-                }]
-            }
-
-            # Send request to TensorFlow Serving to speed up speed later
-            response = requests.post(GAN_SERVER_URL, json=payload)
-            response.raise_for_status()  # Raise error for bad responses
+      
             return redirect(url_for('home'))  # Redirect 
         else:
             form.username.errors.append("Invalid username or password")  
@@ -173,8 +166,8 @@ def proxy_generate():
 
         for letter in prompt:
             if letter == " ":
-                # Generate a blank image for spaces
-                blank_image = np.ones((28, 28)) * 255  # White blank image
+                # Generate a blank image that matches the colormap
+                blank_image = np.zeros((28, 28))  # Start with all zeros (low-end of cmap)
                 img_bytes = io.BytesIO()
                 plt.imsave(img_bytes, blank_image, cmap=cmap, format='png')
                 img_bytes.seek(0)
@@ -212,7 +205,7 @@ def proxy_generate():
         return jsonify({"success": False, "error": f"TensorFlow Serving error: {str(e)}"}), 500
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-    
+
     
 
 @app.route("/save", methods=["POST"])

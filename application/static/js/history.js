@@ -134,12 +134,10 @@ function resetAndLoadEntries() {
     loadEntries(currentPage);
 }
 
-// Load entries with current filters
 function loadEntries(page) {
     loading = true;
-    document.getElementById('loading').style.display = 'block'
+    document.getElementById('loading').style.display = 'block';
 
-    // Build URL with active filters
     let url = `/history?page=${page}&per_page=${perPage}&sort_by=${activeSortBy}`;
 
     if (activeSearchLetters) url += `&letters=${activeSearchLetters}`;
@@ -147,7 +145,7 @@ function loadEntries(page) {
     if (activeStartDate && activeEndDate) {
         url += `&start_date=${activeStartDate}&end_date=${activeEndDate}`;
     }
-    if (activeColormaps.length > 0) url += `&colormaps=${activeColormaps.join(',')}`;  // Add colormap filter
+    if (activeColormaps.length > 0) url += `&colormaps=${activeColormaps.join(',')}`;
 
     fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(response => response.json())
@@ -157,18 +155,21 @@ function loadEntries(page) {
             if (data.entries.length === 0 && page === 1) {
                 container.innerHTML = '<p class="text-center" style="color:white">No entries found for the selected filters.</p>';
                 hasMoreEntries = false;
-
-                if (loadingElement) {
-                    loadingElement.style.display = 'none';  // Hide loading spinner
-                }
+                document.getElementById('loading').style.display = 'none';
                 return;
             }
 
             data.entries.forEach(entry => {
+                const MAX_TEXT_LENGTH = 50; // Adjust limit as needed
+                const isTextLong = entry.letter.length > MAX_TEXT_LENGTH;
+                const shortText = entry.letter.substring(0, MAX_TEXT_LENGTH) + (isTextLong ? "..." : "");
+                
                 const card = document.createElement('div');
                 card.classList.add('prediction-card');
                 card.innerHTML = `
-                    <img src="data:image/png;base64,${entry.image_data}" class="prediction-image" alt="Generated Text ${entry.letter}">
+                    <div class="image-container">
+                        <img src="data:image/png;base64,${entry.image_data}" class="prediction-image" alt="Generated Text ${entry.letter}">
+                    </div>
                     <div class="card-content">
                         <div class="card-header">
                             <div class="row">
@@ -182,7 +183,10 @@ function loadEntries(page) {
                                     </form>
                                 </div>
                                 <div class="col-9">
-                                    <h5 class="prediction-letter">Generated Letter: ${entry.letter}</h5>
+                                    <h5 style='color:gray' class="text-preview" data-full-text="${entry.letter}">
+                                        ${shortText}
+                                    </h5>
+                                    ${isTextLong ? `<button class="read-more-btn" data-expanded="false">Read More</button>` : ""}
                                     <h6 class="colormap-title">Color: ${entry.colormap}</h6>
                                 </div>
                             </div>
@@ -210,8 +214,27 @@ function loadEntries(page) {
             document.getElementById('loading').style.display = 'none';
             loading = false;
         });
-
 }
+
+// ✅ **Fix for Read More Button using Event Delegation**
+document.addEventListener("click", function (event) {
+    if (event.target.classList.contains("read-more-btn")) {
+        const button = event.target;
+        const textElement = button.previousElementSibling;
+        const fullText = textElement.dataset.fullText;
+        const MAX_TEXT_LENGTH = 50;
+
+        if (button.dataset.expanded === "false") {
+            textElement.textContent = fullText;
+            button.textContent = "Show Less";
+            button.dataset.expanded = "true";
+        } else {
+            textElement.textContent = fullText.substring(0, MAX_TEXT_LENGTH) + "...";
+            button.textContent = "Read More";
+            button.dataset.expanded = "false";
+        }
+    }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     // List of available colormaps

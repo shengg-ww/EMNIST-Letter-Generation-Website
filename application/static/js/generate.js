@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
             // Adjust blank color based on colormap
             let isInverted = cmap === "gray_r"; // 'gray_r' inverts colors (white text on black)
-            let blankColor = isInverted ? "white" : "black"; 
+            let blankColor = isInverted ? "black" : "white"; 
         
             // Fill the entire canvas with the correct color
             ctx.fillStyle = blankColor;
