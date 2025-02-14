@@ -7,24 +7,7 @@ body {
   }
   
 
-  .animated-blob {
-    width: 400px;
-    height: 400px;
-    background: linear-gradient(
-        45deg, 
-        #7d22a4,
-        #3a3690, 
-        #c59678,
-        #FF4500 
-    );
-    box-shadow: 0 5px 5px rgba(78, 77, 77, 0.8); /* Adds a glowing shadow only when hovered */
-    background-size: 300% 300%; /* Makes the gradient larger than the blob */
-    position: relative;
-    bottom:80px;
-    animation: blob-animation 15s infinite ease-in-out, gradient-animation 5s infinite linear;
-    transition: transform 0.4s ease, box-shadow 0.4s ease; 
 
-}
 .start-button{
     background: transparent;
     color:white;
@@ -435,7 +418,7 @@ body {
 
 
 .prediction-image {
-  height:100px; /* Set a max height */
+  height:500px; /* Set a max height */
   margin:20px;
   display: inline-block;
 }
