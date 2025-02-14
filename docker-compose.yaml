@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  tensorflow_serving:
+    build:
+      context: .
+      dockerfile: Dockerfile.tfserving
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./ModelDev:/ModelDev  # Ensure model files are mapped inside container
+
+  flask_app:
+    build:
+      context: .
+      dockerfile: Dockerfile.flask
+    ports:
+      - "5000:5000"
+    depends_on:
+      - tensorflow_serving  # Ensure Flask starts only after TensorFlow Serving
+    environment:
+      - TFSERVING_URL='https://ca2-daaa2b02-2309123-limshengwei.onrender.com/v1/models/saved_cgan:predict'

@@ -197,7 +197,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
     
-    // Function to merge letter images into a single image before saving
     async function mergeImagesForSaving(text) {
         return new Promise((resolve) => {
             const canvas = document.createElement("canvas");
@@ -205,24 +204,38 @@ document.addEventListener("DOMContentLoaded", function () {
     
             const imgWidth = 28;
             const imgHeight = 28;
-            const spacing = 3; 
+            const spacing = 3;
+            const maxCharsPerRow = 10; // Max letters per row before wrapping
     
-            const totalWidth = text.length * (imgWidth + spacing) - spacing;
+            const numRows = Math.ceil(text.length / maxCharsPerRow);
+            const totalWidth = Math.min(text.length, maxCharsPerRow) * (imgWidth + spacing) - spacing;
+            const totalHeight = numRows * (imgHeight + spacing) - spacing;
+    
             canvas.width = totalWidth;
-            canvas.height = imgHeight;
+            canvas.height = totalHeight;
     
             let xOffset = 0;
+            let yOffset = 0;
             let loadedImages = 0;
     
-            text.split("").forEach((letter) => {
+            text.split("").forEach((letter, index) => {
                 const img = new Image();
                 img.src = `data:image/png;base64,${generatedImages[letter]}`;
     
                 img.onload = function () {
-                    ctx.drawImage(img, xOffset, 0, imgWidth, imgHeight);
-                    xOffset += imgWidth + spacing;
+                    ctx.drawImage(img, xOffset, yOffset, imgWidth, imgHeight);
                     loadedImages++;
     
+                    // Move to the next column
+                    xOffset += imgWidth + spacing;
+    
+                    // Wrap to a new row if maxCharsPerRow is reached
+                    if ((index + 1) % maxCharsPerRow === 0) {
+                        xOffset = 0;
+                        yOffset += imgHeight + spacing;
+                    }
+    
+                    // Resolve the promise once all images are loaded
                     if (loadedImages === text.length) {
                         console.log("✅ Final merged sentence image ready for saving!");
                         resolve(canvas.toDataURL("image/png").split(",")[1]); // Convert to Base64

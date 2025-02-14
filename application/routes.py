@@ -26,6 +26,7 @@ from collections import Counter
 from sqlalchemy import func, desc, case
 import asyncio
 import aiohttp
+import os
 
 #Handles http://127.0.0.1:5000/
 @app.route('/')
