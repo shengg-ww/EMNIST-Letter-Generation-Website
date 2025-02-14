@@ -24,7 +24,7 @@ jobs:
       - store_test_results:
           path: test-results
 
-deploy:
+  deploy:  # ✅ Fix: Move deploy inside jobs section
     docker:
       - image: curlimages/curl:latest  # Use lightweight image for API requests
     steps:
@@ -40,4 +40,3 @@ workflows:
       - deploy:
           requires:
             - test  # ✅ Only deploy if tests pass
-
