@@ -32,7 +32,7 @@ jobs:
           name: Trigger Render Deployment
           command: |
             curl -X POST "https://api.render.com/v1/services/srv-cunipvogph6c73etqqo0/deploys" \
-                 -H "Authorization: Bearer ${RENDER_API_KEY}"
+                 -H "Authorization: Bearer ${_Render_API_Key}"
 
 workflows:
   test-and-deploy:
@@ -40,4 +40,4 @@ workflows:
       - test
       - deploy:
           requires:
-            - test  # ✅ Only deploy if tests pass
+            - test  #  Only deploy if tests pass
