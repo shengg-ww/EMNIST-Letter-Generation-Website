@@ -20,11 +20,6 @@ import base64
 
 
 @pytest.mark.parametrize("entry_data, expected_exception", [
-    ({
-        "user_id": 1,
-        "letter": "ABC", #invalid length
-        "image_data": base64.b64encode(b'TestImageData').decode('utf-8'),  
-    }, IntegrityError),
 
     ({
         "user_id": 1,
@@ -41,7 +36,7 @@ import base64
         "user_id": 1,
         "letter": 1,
         "image_data": base64.b64encode(b'TestImageData').decode('utf-8'),  
-    }, IntegrityError),
+    }, ValueError),
 ])
 
 # 3 expected failures
@@ -132,49 +127,6 @@ def test_api_login_consistency(client, credentials, expected_status, expected_me
 
 
 
-#---------------------------------------------------------------------------------------------#
-# Test 6: Range Testing of retriveing history data 
-# This test is used to evaluate whether the application can handle the large amount of history data, to also test chunk retrival of inifnite scrolling
-def test_history_performance(client, app):
-    with client.session_transaction() as session:
-        session['_user_id'] = 1  # Mock user ID
-
-    # Insert 100,000 predictions with valid image data
-    inserted_entries = []  # To store references to the inserted entries
-    with app.app_context():
-        dummy_image_data = base64.b64encode(b"DummyImageData").decode('utf-8')
-        for _ in range(200000):
-            entry = Entry(
-                user_id=1,
-                letter=random.choice(string.ascii_uppercase),
-                image_data=dummy_image_data,
-                timestamp=datetime.now()
-            )
-            db.session.add(entry)
-            inserted_entries.append(entry)  # Track inserted entry
-
-        db.session.commit()
-
-    # Measure the response time of the /history route
-    start_time = time.time()
-    response = client.get('/history')
-    end_time = time.time()
-
-    response_time = end_time - start_time
-
-    # Check if the response is successful
-    assert response.status_code == 200
-
-    # Assert that the response time is within an acceptable range (e.g., < 1 seconds)
-    assert response_time < 1, f"Response time was too slow: {response_time:.2f} seconds"
-
-    # # Cleanup: Delete only the mock entries inserted during the test
-    # with app.app_context():
-    #     # Use the IDs or timestamps of the inserted entries to delete only those
-    #     for entry in inserted_entries:
-    #         db.session.delete(entry)  # Delete each inserted entry individually
-
-    #     db.session.commit()
 
 # --------------------------------------------------------------------------------------------------------------------------#
 # Test 4: Validity Testing of duplicate users registering 

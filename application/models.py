@@ -27,4 +27,8 @@ class Entry(db.Model):
     is_favorite = Column(Boolean, default=False)  # New field for favorites
     colormap = db.Column(db.String(50))  # Add this line to store colormap
 
-
+    @validates('letter')
+    def validate_letter(self, key, value):
+        if not value.replace(" ", "").isalpha():  # ✅ Allow only letters & spaces
+            raise ValueError("Letter must contain only alphabets (A-Z) and spaces")
+        return value

@@ -24,7 +24,20 @@ jobs:
       - store_test_results:
           path: test-results
 
+deploy:
+    docker:
+      - image: curlimages/curl:latest  # Use lightweight image for API requests
+    steps:
+      - run:
+          name: Trigger Render Deployment
+          command: |
+            curl -X POST "https://api.render.com/deploy/srv-cunipvogph6c73etqqo0?key=${RENDER_API_KEY}"
+
 workflows:
-  test-workflow:
+  test-and-deploy:
     jobs:
       - test
+      - deploy:
+          requires:
+            - test  # ✅ Only deploy if tests pass
+
