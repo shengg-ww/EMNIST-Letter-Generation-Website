@@ -4,6 +4,7 @@ jobs:
   test:
     docker:
       - image: python:3.8  # Use Python image to run pytest
+    working_directory: ~/project  # Set working directory to repo root
     steps:
       - checkout  # Clone the repo
       - run:
@@ -12,9 +13,12 @@ jobs:
             pip install -r requirements.txt
             pip install pytest
       - run:
+          name: Verify project structure
+          command: ls -R  # Check if files exist inside CircleCI
+      - run:
           name: Run Tests with Pytest
           command: |
-            pytest --junitxml=test-results/junit.xml  # Run pytest & save results
+            pytest tests/ --junitxml=test-results/junit.xml  # Run pytest on tests folder
 
       # Store test results
       - store_test_results:
