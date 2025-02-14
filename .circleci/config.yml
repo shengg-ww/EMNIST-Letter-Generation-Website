@@ -29,10 +29,14 @@ jobs:
       - image: curlimages/curl:latest
     steps:
       - run:
+          name: Debug API Key
+          command: echo "RENDER_API_KEY is set"
+
+      - run:
           name: Trigger Render Deployment
           command: |
             curl -X POST "https://api.render.com/v1/services/srv-cunipvogph6c73etqqo0/deploys" \
-                 -H "Authorization: Bearer ${_Render_API_Key}"
+                 -H "Authorization: Bearer ${RENDER_API_KEY}"
 
 workflows:
   test-and-deploy:
