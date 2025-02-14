@@ -106,6 +106,10 @@ def test_api_save_letter(client, letter, image_data, expected_status, expected_r
     ({"username": "big_admin", "password": "123"}, 401, "Invalid username or password"),  # Non-existent user
 ])
 def test_api_login_consistency(client, credentials, expected_status, expected_message):
+     # Mock login for testing
+    with client.session_transaction() as session:
+        session['_user_id'] = 1  # Mock user ID
+
     # Perform first login
     response1 = client.post('/api/login', json=credentials)
     assert response1.status_code == expected_status
