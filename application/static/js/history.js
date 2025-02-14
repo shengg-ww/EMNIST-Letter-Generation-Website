@@ -160,7 +160,7 @@ function loadEntries(page) {
             }
 
             data.entries.forEach(entry => {
-                const MAX_TEXT_LENGTH = 50; // Adjust limit as needed
+                const MAX_TEXT_LENGTH = 60; // Adjust limit as needed
                 const isTextLong = entry.letter.length > MAX_TEXT_LENGTH;
                 const shortText = entry.letter.substring(0, MAX_TEXT_LENGTH) + (isTextLong ? "..." : "");
                 
@@ -183,8 +183,8 @@ function loadEntries(page) {
                                     </form>
                                 </div>
                                 <div class="col-9">
-                                    <h5 style='color:gray' class="text-preview" data-full-text="${entry.letter}">
-                                        ${shortText}
+                                     <h5 style='color:gray' class="text-preview" data-full-text="${entry.letter}">
+                                        ${entry.letter.length === 1 ? "Generated Letter:" : "Generated Text:"} ${shortText}
                                     </h5>
                                     ${isTextLong ? `<button class="read-more-btn" data-expanded="false">Read More</button>` : ""}
                                     <h6 class="colormap-title">Color: ${entry.colormap}</h6>
@@ -222,14 +222,14 @@ document.addEventListener("click", function (event) {
         const button = event.target;
         const textElement = button.previousElementSibling;
         const fullText = textElement.dataset.fullText;
-        const MAX_TEXT_LENGTH = 50;
+        const MAX_TEXT_LENGTH = 60;
 
         if (button.dataset.expanded === "false") {
-            textElement.textContent = fullText;
+            textElement.textContent ="Generated Text: "+ fullText;
             button.textContent = "Show Less";
             button.dataset.expanded = "true";
         } else {
-            textElement.textContent = fullText.substring(0, MAX_TEXT_LENGTH) + "...";
+            textElement.textContent = "Generated Text: "+ fullText.substring(0, MAX_TEXT_LENGTH) + "...";
             button.textContent = "Read More";
             button.dataset.expanded = "false";
         }

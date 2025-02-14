@@ -24,13 +24,12 @@ db = SQLAlchemy()
 with app.app_context():
     db.init_app(app)
     from .models import User, Entry
-    db.drop_all()
     db.create_all()  # Create all tables
     print('Created all Tables in Database')
 
     # Check if admin user exists
     admin_username = "admin"
-    admin_password = "123"  # Default admin password
+    admin_password = "1"  # Default admin password
     admin_email='admin@gmail.com'
     admin_role = "admin"
 

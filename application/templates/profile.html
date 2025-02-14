@@ -89,7 +89,7 @@
             <div class="card shadow-sm">
                 <img src="data:image/png;base64,{{ entry.image_data }}" class="favourite-image" alt="Favorite Image">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Letter: {{ entry.letter }}</h5>
+                    <h5 class="card-title">{{ entry.letter }}</h5>
                     <p class="card-text text-muted">Predicted on: {{ entry.timestamp.strftime('%-d %b %Y') }}</p>
                 </div>
             </div>

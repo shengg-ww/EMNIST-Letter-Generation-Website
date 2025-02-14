@@ -1,24 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-body {
-    background:black;
-    font-family: 'Inter', sans-serif;
-    height: 100%;
-    overflow: hidden;
-  }
-  
 
-.animated-blob2 {
-  position: absolute; /* Position it relative to the nearest positioned ancestor */
-  width: 600px;
-  height: 600px;
-  top:120px;
-  background: black;
-  box-shadow: 0 15px 30px rgba(240, 121, 121, 0.8); /* Adds a glowing shadow */
-  border-radius: 100%; /* Make it circular */
-  z-index: -1; /* Behind the text */
-  animation: blob-animation 25s infinite ease-in-out, gradient-animation 5s infinite linear;
-  transition: transform 0.4s ease, box-shadow 0.4s ease; 
+
+body{
+background:black;
+height: 100%;
+overflow:hidden;
 }
+
 /* User Icon Styling */
 .user-icon {
   font-size: 1.8rem;
@@ -44,74 +32,13 @@ body {
   color: #00bfff;  /* Light blue on hover */
 }
 
-.animated-blob3 {
-  position: absolute; /* Position it relative to the nearest positioned ancestor */
-  width: 900px;
-  height: 900px;
-  top:80px;
-  background: black;
-  box-shadow: 0 15px 30px rgba(240, 121, 121, 0.8); /* Adds a glowing shadow */
-  border-radius: 100%; /* Make it circular */
-  z-index: -1; /* Behind the text */
-  animation: blob-animation 25s infinite ease-in-out, gradient-animation 5s infinite linear;
-  transition: transform 0.4s ease, box-shadow 0.4s ease; 
-}
-
-
-
-
-@keyframes blob-animation {
-    0%, 100% {
-        border-radius: 50%;
-        transform: translate(0, 0) scale(1);
-    }
-    25% {
-        border-radius: 60% 40% 70% 30% / 30% 70% 40% 60%;
-        transform: translate(10px, -20px) scale(1.1);
-    }
-    50% {
-        border-radius: 40% 60% 30% 70% / 60% 30% 70% 40%;
-        transform: translate(-15px, 10px) scale(1.2);
-    }
-    75% {
-        border-radius: 70% 30% 50% 50% / 50% 50% 30% 70%;
-        transform: translate(20px, -10px) scale(1.1);
-    }
-}
-
-/* Gradient Animation */
-@keyframes gradient-animation {
-  0% {
-      background-position: 0% 50%; /* Start at the left */
-  }
-  50% {
-      background-position: 100% 50%; /* Shift to the right */
-  }
-  100% {
-      background-position: 0% 50%; /* Return to the start */
-  }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}  
-.home-subtitle, .home-title{
-  position: relative;
-  bottom:80px;
-  left:50px;
-}
-
 
 
 .home-title{
   color:white;
+  position: relative;
+  top:-120px;
+  left:40px;
   font-weight: bold;
   font-size: 4.5rem
 }
@@ -120,6 +47,9 @@ body {
 .home-subtitle{
 color:#cdcdcd;
 padding:10px;
+position: relative;
+top:-80px;
+left:40px;
 font-size:1.5rem;
 margin-top:30px;
 }

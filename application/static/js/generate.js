@@ -20,11 +20,30 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    const MAX_CHAR_LIMIT = 60; // Adjust limit as needed
 
+    inputField.addEventListener("input", function () {
+        if (inputField.value.length > MAX_CHAR_LIMIT) {
+            inputField.value = inputField.value.substring(0, MAX_CHAR_LIMIT); // Trim excess characters
+        }
+        
+        // Show remaining characters dynamically
+        const remainingChars = MAX_CHAR_LIMIT - inputField.value.length;
+        document.getElementById("char-counter").textContent = `Characters remaining: ${remainingChars}`;
+    });
+    
+    // Prevent paste if it exceeds limit
+    inputField.addEventListener("paste", function (event) {
+        let pastedText = (event.clipboardData || window.clipboardData).getData("text");
+        if (inputField.value.length + pastedText.length > MAX_CHAR_LIMIT) {
+            event.preventDefault(); // Stop pasting if it exceeds limit
+        }
+    });
+    
 
     // Check if all elements exist before proceeding
     if (!inputField || !promptDisplay || !imageContainer || !colorPicker) {
-        console.error("❌ Error: One or more required elements are missing in the DOM.");
+        console.error(" Error: One or more required elements are missing in the DOM.");
         return; // Stop execution if elements are missing
     }
 
@@ -132,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log(`✔ Image generated for letter: ${letter}`);
             return data.images[0]; // Return first image
         } catch (error) {
-            console.error(`❌ Failed to generate image for ${letter}:`, error);
+            console.error(` Failed to generate image for ${letter}:`, error);
             return createBlankImage(); // Fallback to blank image if there's an error
         }
     }
@@ -187,12 +206,12 @@ document.addEventListener("DOMContentLoaded", function () {
             if (data.success) {
                 alert(`Saved successfully!`);
             } else {
-                console.error("❌ Save failed:", data.error);
+                console.error(" Save failed:", data.error);
                 alert(`Error: ${data.error}`);
             }
     
         } catch (error) {
-            console.error("❌ Failed to save:", error);
+            console.error(" Failed to save:", error);
             alert("An error occurred while saving.");
         }
     });
@@ -204,12 +223,12 @@ document.addEventListener("DOMContentLoaded", function () {
     
             const imgWidth = 28;
             const imgHeight = 28;
-            const spacing = 3;
+        
             const maxCharsPerRow = 10; // Max letters per row before wrapping
     
             const numRows = Math.ceil(text.length / maxCharsPerRow);
-            const totalWidth = Math.min(text.length, maxCharsPerRow) * (imgWidth + spacing) - spacing;
-            const totalHeight = numRows * (imgHeight + spacing) - spacing;
+            const totalWidth = Math.min(text.length, maxCharsPerRow) * (imgWidth);
+            const totalHeight = numRows * (imgHeight);
     
             canvas.width = totalWidth;
             canvas.height = totalHeight;
@@ -227,17 +246,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     loadedImages++;
     
                     // Move to the next column
-                    xOffset += imgWidth + spacing;
+                    xOffset += imgWidth
     
                     // Wrap to a new row if maxCharsPerRow is reached
                     if ((index + 1) % maxCharsPerRow === 0) {
                         xOffset = 0;
-                        yOffset += imgHeight + spacing;
+                        yOffset += imgHeight;
                     }
     
                     // Resolve the promise once all images are loaded
                     if (loadedImages === text.length) {
-                        console.log("✅ Final merged sentence image ready for saving!");
+                        console.log("Final merged sentence image ready for saving!");
                         resolve(canvas.toDataURL("image/png").split(",")[1]); // Convert to Base64
                     }
                 };

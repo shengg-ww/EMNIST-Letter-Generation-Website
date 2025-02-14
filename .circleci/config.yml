@@ -35,13 +35,20 @@ jobs:
       - run:
           name: Trigger Render Deployment
           command: |
-            curl -X POST "https://api.render.com/v1/services/srv-cunipvogph6c73etqqo0/deploys" \
-                 -H "Authorization: Bearer ${RENDER_API_KEY}"
+            if [ "${CIRCLE_BRANCH}" == "main" ]; then
+              curl -X POST "https://api.render.com/v1/services/srv-cunipvogph6c73etqqo0/deploys" \
+                   -H "Authorization: Bearer ${RENDER_API_KEY}"
+            else
+              echo "Skipping deployment: Not on main branch."
+            fi
 
 workflows:
   test-and-deploy:
     jobs:
-      - test
+      - test  #  Runs on all branches
       - deploy:
           requires:
             - test  #  Only deploy if tests pass
+          filters:
+            branches:
+              only: main  #  Deploys only when pushing to main

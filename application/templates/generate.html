@@ -51,12 +51,14 @@
             <input
                 type="text"
                 name="prompt"
+                maxlength="100"
                 id="chat-input"
                 class="form-control me-3"
-                placeholder="Enter letters or words"
+                placeholder="Enter letters or words (Max: 100 characters)"
                 required
                 style="height: 60px; font-size: 1.2rem; text-transform: uppercase; text-align: center;"
             />
+            <p id="char-counter" style="color: white;">Characters remaining: 100</p>
 
         </form>
 

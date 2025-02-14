@@ -1,34 +1,5 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-body {
-    background: radial-gradient(circle, #282828, #110714, #100518, #1c1324);
-    background-size: 600% 600%;
-    animation: gradientShift 14s ease infinite;
-    color: #e0e0e0;
-    font-family: 'Inter', sans-serif;
-    position: relative;
-}
-
-
-@keyframes gradientShift {
-    0% {
-        background-position: 0% 50%;
-    }
-    25% {
-        background-position: 50% 100%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    75% {
-        background-position: 50% 0%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
-
 
 .navbar-brand {
     color:white;

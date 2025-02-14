@@ -335,7 +335,7 @@ def history():
     # Render template for normal page load
     return render_template('history.html',
                            title='History',
-                           css_file='css/index.css',
+                           css_file='css/history.css',
                            current_page='history',
                            entries=entries,
                            username=current_user.username)
