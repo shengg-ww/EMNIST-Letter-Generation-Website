@@ -147,8 +147,8 @@ def generate():
 
 
 
-@app.route('/proxy_generate', methods=['POST'])
-def proxy_generate():
+@app.route('/generate_image', methods=['POST'])
+def generate_image():
     try:
         data = request.get_json()
         if not data or 'prompt' not in data:
@@ -160,6 +160,9 @@ def proxy_generate():
 
         cmap = data.get('cmap', 'gray_r')
         available_cmaps = plt.colormaps()
+        if len(prompt) > 150:
+            return jsonify({"success": False, "error": "Input exceeds 150-character limit"}), 400
+
         if cmap not in available_cmaps:
             return jsonify({"success": False, "error": f"Invalid colormap. Choose from {available_cmaps}."}), 400
 
@@ -494,8 +497,19 @@ def forget_password():
         current_page='forget_password'
     )
 
+
+
+
+
+
+
+
+
+
+
 # --------------------------------------------------------------------------------------------------------------------------------#
 # API ROUTES FOR TESTING 
+# --------------------------------------------------------------------------------------------------------------------------------#
 
 @app.route("/api/save", methods=["POST"])
 @login_required  # Ensure the user is logged in
@@ -640,3 +654,101 @@ def get_user_history(user_id):
 
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+    
+@app.route('/api/forget_password', methods=['POST'])
+def api_forget_password():
+    """API Endpoint for Password Reset"""
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"success": False, "error": "Invalid request"}), 400
+
+    email = data.get("email")
+    new_password = data.get("new_password")
+    confirm_password = data.get("confirm_password")
+
+    if not email:
+        return jsonify({"success": False, "error": "Email is required"}), 400
+
+    # Check if the user exists
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"success": False, "error": "Email not found"}), 404
+
+    # If only email is provided (initial verification step)
+    if not new_password and not confirm_password:
+        return jsonify({"success": True, "message": "Email verified"}), 200
+
+    # Validate password match
+    if new_password != confirm_password:
+        return jsonify({"success": False, "error": "Passwords must match"}), 400  
+
+    # Mocking the password hash without updating the database
+    hashed_password = generate_password_hash(new_password)
+
+    return jsonify({"success": True, "message": "Password updated successfully!"}), 200
+
+
+
+@app.route('/api/generate_image', methods=['POST'])
+def proxy_generate():
+    try:
+        data = request.get_json()
+        if not data or 'prompt' not in data:
+            return jsonify({"success": False, "error": "Invalid input"}), 400
+
+        prompt = data['prompt'].strip().upper()
+        if not all(char.isalpha() or char.isspace() for char in prompt):
+            return jsonify({"success": False, "error": "Input must contain only letters (A-Z)."}), 400
+
+        cmap = data.get('cmap', 'gray_r')
+        available_cmaps = plt.colormaps()
+        if len(prompt) > 150:
+            return jsonify({"success": False, "error": "Input exceeds 150-character limit"}), 400
+
+        if cmap not in available_cmaps:
+            return jsonify({"success": False, "error": f"Invalid colormap. Choose from {available_cmaps}."}), 400
+
+        generated_images = []
+
+        for letter in prompt:
+            if letter == " ":
+                # Generate a blank image that matches the colormap
+                blank_image = np.zeros((28, 28))  # Start with all zeros (low-end of cmap)
+                img_bytes = io.BytesIO()
+                plt.imsave(img_bytes, blank_image, cmap=cmap, format='png')
+                img_bytes.seek(0)
+                base64_image = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
+                generated_images.append(base64_image)
+                continue
+
+            class_index = [float(ord(letter) - ord('A') + 1)] if letter != "Z" else [0.0]
+            z_input = np.random.normal(0, 1, 100).tolist()
+
+            payload = {
+                "signature_name": "serving_default",
+                "instances": [{"input_13": z_input, "input_12": class_index}]
+            }
+
+            response = requests.post(GAN_SERVER_URL, json=payload)
+            response.raise_for_status()
+            result = response.json()
+
+            if "predictions" not in result or not result["predictions"]:
+                return jsonify({"success": False, "error": "Invalid response from TensorFlow Serving"}), 500
+
+            generated_image = np.array(result["predictions"][0]).reshape(28, 28)
+
+            img_bytes = io.BytesIO()
+            plt.imsave(img_bytes, generated_image, cmap=cmap, format='png')
+            img_bytes.seek(0)
+            base64_image = base64.b64encode(img_bytes.getvalue()).decode('utf-8')
+
+            generated_images.append(base64_image)
+
+        return jsonify({"success": True, "images": generated_images})
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"success": False, "error": f"TensorFlow Serving error: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500

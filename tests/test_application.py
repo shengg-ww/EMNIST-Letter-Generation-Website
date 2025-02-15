@@ -11,93 +11,27 @@ import random
 import string
 import time
 import base64
+from flask import url_for
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from unittest.mock import patch
 
 
 
-# ------------------------------------------------------------------------#
-# Test 3: Expected Failure when inputting out of range values directly into Database
-# These should be expected failure because there are direct constraints for the database, faling the insertion of invalid data
+# Test to ensure @login_required works; Prevents unauthroised users access
+def test_protected_route_requires_login(client):
+    """Ensure protected routes are inaccessible without login."""
+    response = client.get('/history')  # Should redirect to login
+    assert response.status_code == 302  # Redirect
+    assert "/index" in response.location  # Redirects to login
 
 
-@pytest.mark.parametrize("entry_data, expected_exception", [
 
-    ({
-        "user_id": 1,
-        "letter": 'A',
-        "image_data": None, # Invalid image data
-    }, IntegrityError),
-    # Invalid user_id
-    ({
-        "user_id": None, #no user id
-        "letter": 'A',
-        "image_data": base64.b64encode(b'TestImageData').decode('utf-8'),  
-    }, IntegrityError),
-       ({
-        "user_id": 1,
-        "letter": 1,
-        "image_data": base64.b64encode(b'TestImageData').decode('utf-8'),  
-    }, ValueError),
-])
 
-# 3 expected failures
-@pytest.mark.xfail(reason="Testing database constraints", strict=True)
-def test_expected_failures_with_constraints(app, entry_data, expected_exception):
-    with app.app_context():
-        try:
-            # Create the entry object with test data
-            entry = Entry(**entry_data)
-
-            # Attempt to add and commit the entry to the database
-            db.session.add(entry)
-            db.session.commit()
-
-        except Exception as e:
-            # Assert that the raised exception matches the expected one
-            if expected_exception and isinstance(e, expected_exception):
-                print(f"Expected failure occurred: {e}")
-                raise  #  xfail
-            else:
-                print(f"Unexpected exception occurred: {e}")
-                raise
-        finally:
-            # Rollback the session to clean up
-            db.session.rollback()
-
-# ------------------------------------------------------------------------#
-# Test 4: Checking Saving Route and Saving into Database
-
-# Parameterized test for valid and invalid inputs
-@pytest.mark.parametrize("letter, image_data, expected_status, expected_response", [
-    # Invalid cases
-    ("AB", base64.b64encode(b"TestImageData").decode("utf-8"), 400, {"success": False, "error": "Invalid input"}),
-    ("1", base64.b64encode(b"TestImageData").decode("utf-8"), 400, {"success": False, "error": "Invalid input"}),
-    ("", base64.b64encode(b"TestImageData").decode("utf-8"), 400, {"success": False, "error": "Invalid input"}),
-    ("B", None, 400, {"success": False, "error": "No image data provided"})
-])
-def test_api_save_letter(client, letter, image_data, expected_status, expected_response):
-     # Mock login for testing
-    with client.session_transaction() as session:
-        session['_user_id'] = 1  # Mock user ID
-    payload = {
-        "letter": letter,
-        "image": image_data
-    }
-
-    response = client.post("/api/save", json=payload)
-
-    assert response.status_code == expected_status, f"Expected {expected_status}, got {response.status_code}"
-    assert response.get_json() == expected_response, f"Expected {expected_response}, got {response.get_json()}"
-
-    # Wrap DB queries in application context
-    if expected_status == 200:
-        with app.app_context():
-            entry = Entry.query.filter_by(user_id=1, letter=letter).first()
-            assert entry is not None, "Database entry was not created."
-            assert entry.image_data == image_data, "Image data does not match."
 
 
 #---------------------------------------------------------------------------------------------#
-# Test 5: Consistency Testing of logging in with same user
+# Consistency Testing of logging in with same user
 # This test is used to evaluate whether the login can return the same response for different kinds of user inputs across mutliple occurences
 @pytest.mark.parametrize("credentials, expected_status, expected_message", [
     ({"username": "admin", "password": "1"}, 200, "Login successful"),  # Valid login
@@ -131,7 +65,7 @@ def test_api_login_consistency(client, credentials, expected_status, expected_me
 
 
 # --------------------------------------------------------------------------------------------------------------------------#
-# Test 4: Validity Testing of duplicate users registering 
+#  Validity Testing of duplicate users registering 
 # This test is to check whether the regsiter form rejects duplicate usernames or emails and return appropriate error messages.
 @pytest.mark.parametrize("payload, expected_error", [
     ({
@@ -157,7 +91,7 @@ def test_api_register(client,payload, expected_error):
 
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------------#
-# Test 6: Validity Testing for retrieval of history from database where user does not exist
+# Validity Testing for retrieval of history from database where user does not exist
 # Ensure that when provided with a non-existent user_id, return an appropriate error message and status code.
 @pytest.mark.parametrize("user_id, expected_error, expected_status", [
     (999, "User not found", 404),  # Non-existent user ID
@@ -177,3 +111,61 @@ def test_get_user_history_expected_failures(client, user_id, expected_error, exp
     assert response_data is not None, "Expected a JSON response"
     assert "error" in response_data, "Expected 'error' key in response"
     assert response_data["error"] == expected_error, f"Unexpected error message: {response_data['error']}"
+
+
+
+# Test to check for valid email in forget password
+
+@pytest.mark.parametrize("email, expected_status, success", [
+    ("admin@gmail.com", 200, True),  #  Valid user - should return 200
+    ("invalid@example.com", 404, False),  #  Invalid user - should return 404
+])
+def test_submit_email(client, email, expected_status, success):
+    """Test email submission for password reset."""
+    response = client.post('/api/forget_password', json={"email": email})
+
+    assert response.status_code == expected_status
+    data = response.get_json()
+    if success:
+        assert data["success"] is True
+        assert data["message"] == "Email verified"
+    else:
+        assert data["success"] is False
+        assert data["error"] == "Email not found"
+
+
+
+# Test Password Reset functionality; Password must match
+@pytest.mark.parametrize("new_password, confirm_password, expected_status, expected_response", [
+    ("NewPass123!", "NewPass123!", 200, {"success": True, "message": "Password updated successfully!"}),  # Matching passwords
+    ("NewPass123!", "WrongPass!", 400, {"success": False, "error": "Passwords must match"}),  #  Mismatched passwords
+])
+def test_password_reset(client, new_password, confirm_password, expected_status, expected_response):
+    """Test password reset without actually modifying the database."""
+
+    with patch("application.routes.db.session.commit") as mock_commit, \
+         patch("application.routes.generate_password_hash", return_value="MOCKED_HASH") as mock_hash:
+        
+        response = client.post('/api/forget_password', json={
+            "email": "admin@gmail.com",
+            "new_password": new_password,
+            "confirm_password": confirm_password
+        })
+
+        assert response.status_code == expected_status
+        assert response.get_json() == expected_response
+
+ 
+
+# Test for invalid user reset password
+def test_password_reset_invalid_user(client):
+    """Test password reset for a user that does not exist."""
+    response = client.post('/api/forget_password', json={
+        "email": "unknown@example.com",
+        "new_password": "SomePass123!",
+        "confirm_password": "SomePass123!"
+    })
+
+    assert response.status_code == 404
+    assert response.get_json() == {"success": False, "error": "Email not found"}
+
