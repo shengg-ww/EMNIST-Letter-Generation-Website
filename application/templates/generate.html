@@ -1,9 +1,10 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
+<div id="threejs-background"></div>
+<div class="container-fluid d-flex flex-column justify-content-center align-items-center mt-5">
     <h1 class="gen-title text-white">Generate EMNIST Letters</h1>    
-    <div id="threejs-background" class="position-absolute w-100 h-100"></div>
+    
 
     <!-- Chatbox -->
     <div class="chatbox rounded shadow-sm w-100">
@@ -156,13 +157,5 @@
     }
 
  
-
-    .gen-image {
-        max-width: 90px;
-        display: inline-block;
-        position:relative;
-        left:10px;
-
-    }
 </style>
 {% endblock %}

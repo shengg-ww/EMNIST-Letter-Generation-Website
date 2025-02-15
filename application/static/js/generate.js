@@ -47,31 +47,66 @@ document.addEventListener("DOMContentLoaded", function () {
         return; // Stop execution if elements are missing
     }
 
-    const GAN_PROXY_URL = "http://127.0.0.1:5000/proxy_generate"; // Ensure it targets the correct backend route
+    const GAN_PROXY_URL = "https://web-service-ca2-daaa2b02-2309123.onrender.com/proxy_generate"; // Ensure it targets the correct backend route
     let debounceTimer = null; // Prevent API spam
     let generatedImages = {}; // Store generated images { "A": base64Image, "B": base64Image, " ": blankImage }
 
-        // Generate a blank 28x28 image that matches the selected colormap (cmap)
-    function createBlankImage(cmap) {
-            const canvas = document.createElement("canvas");
-            canvas.width = 28;
-            canvas.height = 28;
-            const ctx = canvas.getContext("2d");
-        
-            // Adjust blank color based on colormap
-            let isInverted = cmap === "gray_r"; // 'gray_r' inverts colors (white text on black)
-            let blankColor = isInverted ? "black" : "white"; 
-        
-            // Fill the entire canvas with the correct color
-            ctx.fillStyle = blankColor;
-            ctx.fillRect(0, 0, 28, 28);
-        
-            return canvas.toDataURL("image/png").split(",")[1]; // Convert to Base64 (remove prefix)
-        }
-        
+      // Generate a blank 28x28 image based on colormap
+function createBlankImage(cmap) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 28;
+    canvas.height = 28;
+    const ctx = canvas.getContext("2d");
 
-    // Preload blank image for spaces
-    generatedImages[" "] = createBlankImage();
+    // Assign white to light colormaps and black to dark colormaps
+    const blankColor = ["gray_r", "Blues", "Greens", "Reds", "Purples"].includes(cmap) ? "white" : "black";
+
+    console.log(`Colormap: ${cmap}, Selected Blank Color: ${blankColor}`);
+
+    ctx.fillStyle = blankColor;
+    ctx.fillRect(0, 0, 28, 28);
+
+    return canvas.toDataURL("image/png").split(",")[1]; 
+}
+
+
+    function getSelectedColor() {
+        return colorPicker ? colorPicker.value : "gray_r";
+    }
+
+    function updateBlankImage() {
+        const selectedColor = getSelectedColor();
+        generatedImages[" "] = createBlankImage(selectedColor);
+    }
+
+    updateBlankImage();
+
+    colorPicker.addEventListener("change", function () {
+        console.log(`🔹 Colormap changed to: ${colorPicker.value}`);
+        updateBlankImage(); 
+        updateDisplayedImages(inputField.value.trim().toUpperCase()); 
+    });
+
+    inputField.addEventListener("input", function (event) {
+        let text = inputField.value.trim().toUpperCase();
+        if (!/^[A-Z\s]*$/.test(text)) {
+            inputField.value = text.replace(/[^A-Z\s]/g, "");
+            return;
+        }
+
+        updateTitle(text);
+
+        if (event.inputType === "deleteContentBackward") {
+            handleBackspace(text);
+            return;
+        }
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            updateDisplayedImages(text);
+        }, 300);
+    });
+
 
     inputField.addEventListener("input", function (event) {
         let text = inputField.value.trim().toUpperCase();

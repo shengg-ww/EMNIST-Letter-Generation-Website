@@ -163,7 +163,10 @@ function loadEntries(page) {
                 const MAX_TEXT_LENGTH = 40; // Adjust limit as needed
                 const isTextLong = entry.letter.length > MAX_TEXT_LENGTH;
                 const shortText = entry.letter.substring(0, MAX_TEXT_LENGTH) + (isTextLong ? "..." : "");
-                
+            
+                const wordCount = entry.letter.split(/\s+/).filter(word => word.length > 0).length; // Count words
+                const charCount = entry.letter.length; // Count characters including spaces
+            
                 const card = document.createElement('div');
                 card.classList.add('prediction-card');
                 card.innerHTML = `
@@ -188,6 +191,7 @@ function loadEntries(page) {
                                     </h5>
                                     ${isTextLong ? `<button class="read-more-btn" data-expanded="false">Read More</button>` : ""}
                                     <h6 class="colormap-title">Color: ${entry.colormap}</h6>
+                                    <h6 class="word-count">Words: ${wordCount} | Characters: ${charCount}</h6> 
                                 </div>
                             </div>
                         </div>
@@ -201,7 +205,7 @@ function loadEntries(page) {
                 `;
                 container.appendChild(card);
             });
-
+            
             if (!data.has_next) {
                 hasMoreEntries = false;
             }

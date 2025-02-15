@@ -36,9 +36,8 @@ overflow:hidden;
 
 .home-title{
   color:white;
-  position: relative;
-  top:-120px;
-  left:40px;
+  margin-left:50px;
+ 
   font-weight: bold;
   font-size: 4.5rem
 }
@@ -46,10 +45,8 @@ overflow:hidden;
 
 .home-subtitle{
 color:#cdcdcd;
-padding:10px;
-position: relative;
-top:-80px;
-left:40px;
+margin-left:50px;
+margin-bottom:100px;
 font-size:1.5rem;
 margin-top:30px;
 }
@@ -319,16 +316,15 @@ margin-top:30px;
 .chatbox {
   max-width: 700px;
   max-height:300px;
+  padding:20px;
 
   background-color: rgba(0, 0, 0, 0.7); /* Black with transparency */
   border-radius: 12px;
-  position:relative;
   bottom:155px;
   color: rgb(150, 43, 43);
 }
 .gen-title{
-  position:relative;
-  bottom:230px;
+
   font-size:3rem;
 }
 .messages {
@@ -346,12 +342,10 @@ margin-top:30px;
   margin-bottom: 10px;
 }
 .gen-image{
-  width: 190px; 
-  height: 190px;
-  position:relative; 
-  left:200px;
-  object-fit: contain;
-  display: none;
+  display: inline-block;
+  left:10px;
+  width: 55px; 
+
 }
 .image-title{
   margin-bottom: 40px; 

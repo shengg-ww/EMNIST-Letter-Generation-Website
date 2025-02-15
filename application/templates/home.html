@@ -4,9 +4,9 @@
 <!-- Three.js Canvas for Background -->
 
 <div class="container-fluid vh-100 d-flex flex-column">
-    <div id="threejs-background" class="position-absolute w-100 h-100"></div> <!-- Ensure it covers the full background -->
-    <div class="row flex-grow-1 h-100">
-        <div class="col-sm-12 col-md-6 d-flex flex-column align-items-start justify-content-center px-5">
+    <div id="threejs-background"></div> <!-- Ensure it covers the full background -->
+    <div class="row h-100">
+        <div class="col-sm-12 col-md-6 d-flex flex-column align-items-start justify-content-center">
             <h1 class="home-title" id="typing-title"></h1>
             <p class="home-subtitle" id="typing-subtitle"></p> 
             <!-- Buttons Section -->
@@ -38,6 +38,76 @@
         background: black;
         overflow: hidden;
     }
+      /* 📱 Standard Mobile Devices (Most smartphones) */
+@media (max-width: 768px) {
+    .home-title {
+        font-size: 2rem;
+        text-align: center;
+    }
+
+    .home-subtitle {
+        font-size: 1.1rem;
+        text-align: center;
+    }
+
+    .generate-button, .history-button {
+        font-size: 0.9rem;
+        padding: 10px 16px;
+        width: 100%;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    #threejs-container {
+        max-width: 300px;
+        max-height: 300px;
+    }
+}
+
+/* 📱 iPads & Tablets (Standard 10-inch tablets) */
+@media (max-width: 1024px) {
+    .home-title {
+        font-size: 2.5rem;
+        text-align: center;
+    }
+
+    .home-subtitle {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    .generate-button, .history-button {
+        font-size: 1rem;
+        padding: 12px 18px;
+        width: auto;
+    }
+
+    #threejs-container {
+        max-width: 350px;
+        max-height: 350px;
+    }
+}
+
+/* 💻 iPad Pro & Large Tablets (12-inch tablets, small desktops) */
+@media (max-width: 1200px) {
+    .home-title {
+        font-size: 3rem;
+    }
+
+    .home-subtitle {
+        font-size: 1.3rem;
+    }
+
+    .generate-button, .history-button {
+        font-size: 1.1rem;
+        padding: 14px 20px;
+    }
+
+    #threejs-container {
+        max-width: 400px;
+        max-height: 400px;
+    }
+}
 </style>
 <!-- Include Three.js via CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -65,60 +135,63 @@
     }
 
     function initThreeJS() {
-        const container = document.getElementById("threejs-container");
-        if (!container) return;
-        container.innerHTML = "";  // Clear any previous content
+    const container = document.getElementById("threejs-container");
+    if (!container) return;
+    container.innerHTML = "";  // Clear any previous content
 
-        // Create scene
-        const scene = new THREE.Scene();
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.z = 5;
 
-        // Create camera (PerspectiveCamera)
-        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-        camera.position.z = 5;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
 
-        // Create WebGL Renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        container.appendChild(renderer.domElement);
-
-        // ===================
-        // 1. Rotating Torus Knot 🌌
-        // ===================
-        const torusGeometry = new THREE.TorusKnotGeometry(1.1, 0.4, 100, 16);
-        const torusMaterial = new THREE.MeshStandardMaterial({ color: 0x815fc0, metalness: 0.6, roughness: 0.2 });
-        const torus = new THREE.Mesh(torusGeometry, torusMaterial);
-        torus.position.y = 0.8
-        scene.add(torus);
-
-        // Add ambient lighting (to ensure visibility)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
-
-        // Add point lighting
-        const light = new THREE.PointLight(0xffffff, 1.5);
-        light.position.set(2, 2, 5);
-        scene.add(light);
-
-        // Animation Loop
-        function animate() {
-            requestAnimationFrame(animate);
-
-            // Rotate Torus
-            torus.rotation.x += 0.01;
-            torus.rotation.y += 0.01;
-
-            renderer.render(scene, camera);
+    // **🔹 Function to Adjust Torus Size Dynamically**
+    function getTorusSize() {
+        if (window.innerWidth < 768) {
+            return { radius: 0.8, tube: 0.3 }; // Smaller torus for mobile
         }
-
-        animate();
-
-        // Handle Resizing
-        window.addEventListener("resize", () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        });
+      else {
+            return { radius: 1.1, tube: 0.4 }; // Default size for larger screens
+        }
     }
+
+    // **🔹 Create Torus with Responsive Size**
+    let { radius, tube } = getTorusSize();
+    let torusGeometry = new THREE.TorusKnotGeometry(radius, tube, 100, 16);
+    let torusMaterial = new THREE.MeshStandardMaterial({ color: 0x815fc0, metalness: 0.6, roughness: 0.2 });
+    let torus = new THREE.Mesh(torusGeometry, torusMaterial);
+    torus.position.y = 0.8;
+    scene.add(torus);
+
+    // **🔹 Adjust Torus Size on Window Resize**
+    window.addEventListener("resize", () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+
+        let newSize = getTorusSize();
+        torus.geometry.dispose(); // Remove old geometry
+        torus.geometry = new THREE.TorusKnotGeometry(newSize.radius, newSize.tube, 100, 16);
+    });
+
+    // **🔹 Lighting**
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const light = new THREE.PointLight(0xffffff, 1.5);
+    light.position.set(2, 2, 5);
+    scene.add(light);
+
+    // **🔹 Animation Loop**
+    function animate() {
+        requestAnimationFrame(animate);
+        torus.rotation.x += 0.01;
+        torus.rotation.y += 0.01;
+        renderer.render(scene, camera);
+    }
+
+    animate();
+}
 
     function background3js() {
         const container = document.getElementById("threejs-background");
