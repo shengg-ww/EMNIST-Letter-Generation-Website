@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    const MAX_CHAR_LIMIT = 60; // Adjust limit as needed
+    const MAX_CHAR_LIMIT = 150; // Adjust limit as needed
 
     inputField.addEventListener("input", function () {
         if (inputField.value.length > MAX_CHAR_LIMIT) {
@@ -148,7 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 throw new Error(data.error || "Invalid response from server.");
             }
 
-            console.log(`✔ Image generated for letter: ${letter}`);
+            console.log(`Image generated for letter: ${letter}`);
             return data.images[0]; // Return first image
         } catch (error) {
             console.error(` Failed to generate image for ${letter}:`, error);
@@ -224,7 +224,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const imgWidth = 28;
             const imgHeight = 28;
         
-            const maxCharsPerRow = 10; // Max letters per row before wrapping
+            const maxCharsPerRow = 20; // Max letters per row before wrapping
     
             const numRows = Math.ceil(text.length / maxCharsPerRow);
             const totalWidth = Math.min(text.length, maxCharsPerRow) * (imgWidth);

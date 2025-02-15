@@ -8,41 +8,49 @@
 <div class="history-container container mt-5">
     <h1 class="page-title">Prediction History for {{ username }}</h1>
 
-    <!-- Filter and Search Section -->
-    <div class="filter-section">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <input type="text" id="search-letters" class="form-control" placeholder="Search letters (e.g., AB)" autocomplete="off">
-                <small class="text-danger d-none" id="search-error">Only uppercase letters allowed without spaces or commas.</small>
-            </div>
-            <div class="col-md-3">
-                <select id="sort-by" class="form-control">
-                    <option value="recent">Sort by Recent</option>
-                    <option value="oldest">Sort by Oldest</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle form-control" type="button" id="colormap-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Filter Colors
-                    </button>
-                    <ul class="dropdown-menu" id="colormap-filter" style="max-height: 150px; overflow-y: auto;"></ul>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <input type="text" id="date-range" class="form-control" placeholder="Select date range" readonly>
-            </div>
-            <div class="col-md-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="show-favorites">
-                    <label class="form-check-label" for="show-favorites">Show Favorites Only</label>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <button id="reset-filters" class="btn reset-filters">Reset All Filters</button>
+ <!-- Filter and Search Section -->
+<div class="filter-section">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <input type="text" id="search-letters" class="form-control" placeholder="Search letters (e.g., AB)" autocomplete="off">
+            <small class="text-danger d-none" id="search-error">Only uppercase letters allowed without spaces or commas.</small>
+        </div>
+        <div class="col-md-3">
+            <select id="sort-by" class="form-control">
+                <option value="recent">Sort by Recent</option>
+                <option value="oldest">Sort by Oldest</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle form-control" type="button" id="colormap-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Filter Colors
+                </button>
+                <ul class="dropdown-menu" id="colormap-filter" style="max-height: 150px; overflow-y: auto;"></ul>
             </div>
         </div>
+        <div class="col-md-3">
+            <input type="text" id="date-range" class="form-control" placeholder="Select date range" readonly>
+        </div>
+        <div class="col-md-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="show-favorites">
+                <label class="form-check-label" for="show-favorites">Show Favorites Only</label>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <button id="reset-filters" class="btn reset-filters">Reset All Filters</button>
+        </div>
+        <div class="col-md-3">
+            <form action="{{ url_for('remove_all_entries') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all entries? This action cannot be undone.')">
+                <button type="submit" class="btn btn-danger">Delete All</button>
+            </form>
+        </div>
     </div>
+</div>
+
+
+
 
     <div id="entries-container" class="card-grid"></div>
 

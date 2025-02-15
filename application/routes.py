@@ -374,6 +374,25 @@ def remove_entry(entry_id):
 
     return redirect(url_for('history'))
 
+@app.route('/remove_all', methods=['POST'])
+@login_required
+def remove_all_entries():
+    user_entries = Entry.query.filter_by(user_id=current_user.id).all()
+
+    if not user_entries:
+        flash("No entries to delete.", "warning")
+        return redirect(url_for('history'))
+
+    try:
+        for entry in user_entries:
+            db.session.delete(entry)
+        db.session.commit()
+        flash("All your entries have been deleted successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting entries: {str(e)}", "danger")
+
+    return redirect(url_for('history'))
 
 
 @app.route('/profile', methods=['GET'])

@@ -204,7 +204,7 @@ body {
       /* Card Styling with Glowing, Flowing White Shadow */
       .prediction-card {
         width: 100%; /* Ensure it spans the full width */
-        max-width: 1000px;
+        max-width: 900px;
         margin-bottom: 60px; /* Ensure spacing */
         position: relative;
         background: rgba(30, 30, 30, 0.9);  /* Deep charcoal background */
@@ -266,9 +266,13 @@ body {
     }
     
     
-
-    /* 
-      
+    .text-preview {
+      font-size: 1.5rem;
+      word-wrap: break-word; /* Ensures long words break onto a new line */
+      overflow-wrap: break-word; /* Alternative for better browser support */
+      white-space: normal; /* Allows text to wrap onto new lines */
+  }
+  
       /* Card Content */
       .card-content {
         padding: 20px;
@@ -282,7 +286,7 @@ body {
     }
     
       .colormap-title {
-        font-size: 1.1rem;
+        font-size: 1.4rem;
         color: #aaa7a7;
         margin-top:25px;
         padding-right:40px;
@@ -300,14 +304,14 @@ body {
     
       }
     .reset-filters{
-      background-color: #fa4848;  /* Dark input background */
+      background-color: #8aa2a3;  /* Dark input background */
       border-radius: 10px;
       border: 1px solid #444;  /* Light border */
       color: #fff;  /* White text */
     }
     
     .reset-filters:hover{
-      background-color: #482222;  /* Dark input background */
+      background-color: #223748;  /* Dark input background */
       border-radius: 10px;
       border: 1px solid #444;  /* Light border */
       color: #ffffff;  /* White text */
@@ -318,7 +322,7 @@ body {
     }
     
       .prediction-date {
-        font-size: 0.9rem;
+        font-size: 1.3rem;
         color: #999;
         margin-bottom: 20px;
       }

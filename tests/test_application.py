@@ -100,15 +100,13 @@ def test_api_save_letter(client, letter, image_data, expected_status, expected_r
 # Test 5: Consistency Testing of logging in with same user
 # This test is used to evaluate whether the login can return the same response for different kinds of user inputs across mutliple occurences
 @pytest.mark.parametrize("credentials, expected_status, expected_message", [
-    ({"username": "admin", "password": "123"}, 200, "Login successful"),  # Valid login
-    ({"username": "admin", "password": "123"}, 200, "Login successful"),  # Same valid login
+    ({"username": "admin", "password": "1"}, 200, "Login successful"),  # Valid login
+    ({"username": "admin", "password": "1"}, 200, "Login successful"),  # Same valid login
     ({"username": "admin", "password": "122123"}, 401, "Invalid username or password"),  # Invalid password
-    ({"username": "big_admin", "password": "123"}, 401, "Invalid username or password"),  # Non-existent user
+    ({"username": "big_admin", "password": "1"}, 401, "Invalid username or password"),  # Non-existent user
 ])
 def test_api_login_consistency(client, credentials, expected_status, expected_message):
-     # Mock login for testing
-    with client.session_transaction() as session:
-        session['_user_id'] = 1  # Mock user ID
+
 
     # Perform first login
     response1 = client.post('/api/login', json=credentials)

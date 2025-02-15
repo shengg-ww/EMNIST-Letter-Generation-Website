@@ -160,7 +160,7 @@ function loadEntries(page) {
             }
 
             data.entries.forEach(entry => {
-                const MAX_TEXT_LENGTH = 60; // Adjust limit as needed
+                const MAX_TEXT_LENGTH = 40; // Adjust limit as needed
                 const isTextLong = entry.letter.length > MAX_TEXT_LENGTH;
                 const shortText = entry.letter.substring(0, MAX_TEXT_LENGTH) + (isTextLong ? "..." : "");
                 
@@ -222,7 +222,7 @@ document.addEventListener("click", function (event) {
         const button = event.target;
         const textElement = button.previousElementSibling;
         const fullText = textElement.dataset.fullText;
-        const MAX_TEXT_LENGTH = 60;
+        const MAX_TEXT_LENGTH = 40;
 
         if (button.dataset.expanded === "false") {
             textElement.textContent ="Generated Text: "+ fullText;
