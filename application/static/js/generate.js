@@ -3,7 +3,47 @@ document.addEventListener("DOMContentLoaded", function () {
     const promptDisplay = document.getElementById("prompt-display");
     const imageContainer = document.getElementById("generated-images-container");
     const saveButton = document.getElementById("save-button");
+
     const colorPicker = document.getElementById("color-picker");
+    const colorPickerLabel = document.getElementById("color-picker-label");
+
+        // Map of readable names for colormaps
+    const colormapNames = {
+            "gray_r": "Black (Default)",
+            "gray": "Inverse Background",
+            "Blues": "Blue",
+            "Greens": "Green",
+            "Reds": "Red",
+            "Purples": "Purple",
+            "YlGnBu": "Yellow-Blue",
+            "twilight": "Twilight",
+            "inferno": "Inferno",
+            "magma": "Magma",
+            "plasma": "Plasma",
+            "viridis": "Viridis",
+            "cividis": "Cividis",
+            "Spectral": "Spectral",
+            "coolwarm": "CoolWarm",
+            "hsv": "HSV"
+        };
+
+        // Load saved colormap selection
+    const savedColormap = localStorage.getItem("selectedColormap") || "gray_r";
+    colorPicker.value = savedColormap;
+    colorPickerLabel.textContent = `Select Color Scheme: ${colormapNames[savedColormap]}`;
+
+        // Listen for changes in color selection
+    colorPicker.addEventListener("change", function () {
+    const selectedColor = colorPicker.value;
+    colorPickerLabel.textContent = `Select Color Scheme: ${colormapNames[selectedColor]}`;
+    localStorage.setItem("selectedColormap", selectedColor);
+
+            // Reload the page to apply the new colormap
+            setTimeout(() => {
+                location.reload(true);
+            }, 100);
+        });
+
 
     document.getElementById("input-form").addEventListener("submit", function(event) {
         event.preventDefault();  // Prevent form submission on Enter key press
@@ -14,11 +54,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    document.getElementById("chat-input").addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-            event.preventDefault();  // Prevent Enter key from submitting the form
-        }
-    });
 
     const MAX_CHAR_LIMIT = 150; // Adjust limit as needed
 
@@ -83,9 +118,57 @@ function createBlankImage(cmap) {
 
     colorPicker.addEventListener("change", function () {
         console.log(`🔹 Colormap changed to: ${colorPicker.value}`);
-        updateBlankImage(); 
-        updateDisplayedImages(inputField.value.trim().toUpperCase()); 
+    
+        // Save the selected colormap in localStorage
+        localStorage.setItem("selectedColormap", colorPicker.value);
+    
+        // Reload the page after a short delay (optional to allow UI feedback)
+        setTimeout(() => {
+            location.reload(true);  // Force a hard refresh
+        }, 100);  // Delay slightly so user sees the selection before reload
+    }); 
+    document.addEventListener("DOMContentLoaded", function () {
+        const savedColormap = localStorage.getItem("selectedColormap") || "gray_r";  // Default
+    
+        // Restore selection
+        colorPicker.value = savedColormap;
+    
+        // Apply colormap to button text
+        updateColorButtonLabel(savedColormap);
+    
+        // Update images accordingly
+        updateBlankImage();
+        updateDisplayedImages(inputField.value.trim().toUpperCase());
     });
+    
+    function updateColorButtonLabel(selectedColormap) {
+        const colormapNames = {
+            "gray_r": "Black (Default)",
+            "gray": "Inverse Background",
+            "Blues": "Blue",
+            "Greens": "Green",
+            "Reds": "Red",
+            "Purples": "Purple",
+            "YlGnBu": "Yellow-Blue",
+            "twilight": "Twilight",
+            "inferno": "Inferno",
+            "magma": "Magma",
+            "plasma": "Plasma",
+            "viridis": "Viridis",
+            "cividis": "Cividis",
+            "Spectral": "Spectral",
+            "coolwarm": "CoolWarm",
+            "hsv": "HSV"
+        };
+    
+        // Get the button element
+        const colorButton = document.getElementById("color-picker-button");
+    
+        if (colorButton) {
+            colorButton.textContent = colormapNames[selectedColormap] || "Custom";
+        }
+    }
+    
 
     inputField.addEventListener("input", function (event) {
         let text = inputField.value.trim().toUpperCase();
@@ -108,28 +191,7 @@ function createBlankImage(cmap) {
     });
 
 
-    inputField.addEventListener("input", function (event) {
-        let text = inputField.value.trim().toUpperCase();
-        if (!/^[A-Z\s]*$/.test(text)) {
-            inputField.value = text.replace(/[^A-Z\s]/g, ""); // Allow only letters and spaces
-            return;
-        }
-
-        // Update the title dynamically
-        updateTitle(text);
-
-        if (event.inputType === "deleteContentBackward") {
-            handleBackspace(text);
-            return;
-        }
-
-        // Debounce input to avoid excessive API calls
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            updateDisplayedImages(text);
-        }, 300); // Wait for 300ms after the last keystroke
-    });
-
+    
     function updateTitle(text) {
         if (!text) {
             promptDisplay.style.display = "none";
@@ -171,26 +233,28 @@ function createBlankImage(cmap) {
     }
 
     async function generateSingleLetter(letter, selectedColor) {
+        const savedColormap = localStorage.getItem("selectedColormap") || selectedColor; // Use saved colormap
+    
         try {
             const response = await fetch(GAN_PROXY_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: letter, cmap: selectedColor })
+                body: JSON.stringify({ prompt: letter, cmap: savedColormap })
             });
-
+    
             const data = await response.json();
             if (!data.success || !data.images || data.images.length === 0) {
                 throw new Error(data.error || "Invalid response from server.");
             }
-
-            console.log(`Image generated for letter: ${letter}`);
-            return data.images[0]; // Return first image
+    
+            console.log(` Image generated for letter: ${letter} with colormap: ${savedColormap}`);
+            return data.images[0];
         } catch (error) {
             console.error(` Failed to generate image for ${letter}:`, error);
-            return createBlankImage(); // Fallback to blank image if there's an error
+            return createBlankImage(savedColormap); // Ensure blank image uses correct colormap
         }
     }
-
+    
     function renderImages(text) {
         imageContainer.innerHTML = ""; // Clear previous images only if needed
 
@@ -214,6 +278,7 @@ function createBlankImage(cmap) {
         }
     
         const selectedColor = colorPicker.value;
+
     
         try {
             // Step 1: Merge images before saving
@@ -250,6 +315,7 @@ function createBlankImage(cmap) {
             alert("An error occurred while saving.");
         }
     });
+    
     
     async function mergeImagesForSaving(text) {
         return new Promise((resolve) => {

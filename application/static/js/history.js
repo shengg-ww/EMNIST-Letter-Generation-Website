@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('search-letters').addEventListener('input', () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
-            activeSearchLetters = document.getElementById('search-letters').value.trim().toUpperCase();
+            activeSearchLetters = document.getElementById('search-letters').value.trim();
             resetAndLoadEntries();  // Reload entries with new search letters
         }, 300);
     });
@@ -139,8 +139,8 @@ function loadEntries(page) {
     document.getElementById('loading').style.display = 'block';
 
     let url = `/history?page=${page}&per_page=${perPage}&sort_by=${activeSortBy}`;
+    if (activeSearchLetters) url += `&search=${encodeURIComponent(activeSearchLetters)}`;  // Match Flask filter name
 
-    if (activeSearchLetters) url += `&letters=${activeSearchLetters}`;
     if (activeFavorites) url += `&favorites=true`;
     if (activeStartDate && activeEndDate) {
         url += `&start_date=${activeStartDate}&end_date=${activeEndDate}`;

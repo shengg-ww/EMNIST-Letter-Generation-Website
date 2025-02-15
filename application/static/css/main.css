@@ -3,8 +3,9 @@
 
 body{
 background:black;
+font-family: 'Inter', sans-serif;
 height: 100%;
-overflow:hidden;
+
 }
 
 /* User Icon Styling */
@@ -150,6 +151,12 @@ margin-top:30px;
   box-shadow: 0 4px 30px rgba(139, 139, 139, 0.5);
   backdrop-filter: blur(10px);
   animation: fadeIn 2s ease-in-out, boxShadowAnimation 3s infinite alternate ease-in-out;
+}
+
+.generated-images-container {
+  padding:30px;
+  gap: 10px;
+  margin-top: 30px;  /* Ensure images stay below */
 }
 
 /* Box Shadow Animation */
@@ -313,9 +320,11 @@ margin-top:30px;
 }
 
 
-.chatbox {
-  max-width: 700px;
-  max-height:300px;
+.chatbox {  
+  justify-content: center;
+  align-items: center;
+  max-width: 900px;
+  max-height:350px;
   padding:20px;
 
   background-color: rgba(0, 0, 0, 0.7); /* Black with transparency */
@@ -324,18 +333,18 @@ margin-top:30px;
   color: rgb(150, 43, 43);
 }
 .gen-title{
-
-  font-size:3rem;
+font-size:3rem;
 }
 .messages {
+  height: 350px;
+  overflow-y: auto; 
+  display:flex;
   border: 1px solid rgba(255, 255, 255, 0.3); /* Light border for contrast */
-  width:800px;
+  width:100%;
   border-radius: 10px;
   overflow-x: hidden;
-  overflow-y: auto;
   background-color: rgba(0, 0, 0, 0.6); /* Slightly darker transparent black */
   color: white;
-  overflow-y: auto;
 }
 
 .message {
@@ -343,13 +352,14 @@ margin-top:30px;
 }
 .gen-image{
   display: inline-block;
-  left:10px;
   width: 55px; 
 
 }
 .image-title{
-  margin-bottom: 40px; 
-  display: none; 
+  margin-bottom: 30px; 
+ 
+  text-align: center;
+  padding:30px;
   font-size:25px;
 }
 
@@ -413,6 +423,7 @@ margin-top:30px;
       transform: translateY(0);
   }
 }
+
 
 .form-error-message {
   color: #d9534f; /* Bootstrap Danger Red */
@@ -502,6 +513,12 @@ margin-top:30px;
 }
 
 
+#prompt-display {
+  word-break: break-word;
+  white-space: pre-wrap;
+  text-align: center;
+  max-width: 100%; /* Ensure it doesn't overflow */
+}
 
 
 .scrollable-dropdown .dropdown-item {

@@ -143,8 +143,9 @@
         const circleTexture = textureLoader.load('https://threejs.org/examples/textures/sprites/circle.png');
 
         const particlesMaterial = new THREE.PointsMaterial({
-            size: 0.02,
+            size: 0.04,
             transparent: true,
+            color:0xA565E8,
             opacity: 0.8,
             map: circleTexture,  // Apply circular texture
             depthTest: false,  // Ensure particles don't overlap badly

@@ -12,7 +12,7 @@
 <div class="filter-section">
     <div class="row g-3">
         <div class="col-md-3">
-            <input type="text" id="search-letters" class="form-control" placeholder="Search letters (e.g., AB)" autocomplete="off">
+            <input type="text" id="search-letters" class="form-control" placeholder="Search" autocomplete="off">
             <small class="text-danger d-none" id="search-error">Only uppercase letters allowed without spaces or commas.</small>
         </div>
         <div class="col-md-3">
@@ -97,9 +97,9 @@
     const circleTexture = textureLoader.load('https://threejs.org/examples/textures/sprites/circle.png');
 
     const particleMaterial = new THREE.PointsMaterial({
-         color: 0x3D3C3E, 
-         size: 0.03 , 
-         map: circleTexture,  // Apply circular texture
+        color: 0xA565E8, 
+        size: 0.03 , 
+        map: circleTexture,  // Apply circular texture
         depthTest: false,  // Ensure particles don't overlap badly
         blending: THREE.AdditiveBlending,});
     const particleMesh = new THREE.Points(particlesGeometry, particleMaterial);

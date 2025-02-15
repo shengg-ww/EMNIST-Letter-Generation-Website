@@ -21,7 +21,7 @@ class Entry(db.Model):
     __tablename__ = 'entries'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    letter= db.Column(db.String(), index=True,nullable=False)
+    letter= db.Column(db.String(150), index=True,nullable=False)
     image_data = db.Column(db.Text, nullable=False)  
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
     is_favorite = Column(Boolean, default=False)  # New field for favorites

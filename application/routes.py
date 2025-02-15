@@ -262,31 +262,32 @@ def save_text():
 
 
 
+from sqlalchemy import or_
+
 @app.route("/history", methods=['GET'])
 @login_required
 def history():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     sort_by = request.args.get('sort_by', 'recent')
-    letter_filter = request.args.get('letters', '')
+    search_query = request.args.get('search', '').strip().lower()  # ✅ Case insensitive search
     show_favorites = request.args.get('favorites', 'false').lower() == 'true'
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
-    colormap_filter = request.args.get('colormaps', '')  # Get colormap query param
+    colormap_filter = request.args.get('colormaps', '')
 
     query = Entry.query.filter_by(user_id=current_user.id)
 
-    # Validate and apply letter filter (only continuous uppercase letters like "AB")
-    if letter_filter:
-        if not re.fullmatch(r'[A-Z]+', letter_filter):
-            return jsonify({'entries': [], 'has_next': False, 'error': 'Invalid letter format'}), 400
-        query = query.filter(Entry.letter.in_(list(letter_filter)))
+    # 🔹 1. SEARCH FUNCTION - Allow matching **letters inside words/sentences**
+    if search_query:
+        query = query.filter(Entry.letter.ilike(f"%{search_query}%"))  # Case-insensitive match
 
-    # Filter by favorites
+
+    # 🔹 2. FILTER FAVORITES
     if show_favorites:
         query = query.filter(Entry.is_favorite.is_(True))
 
-    # Filter by date range
+    # 🔹 3. FILTER BY DATE RANGE
     if start_date:
         try:
             start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
@@ -301,12 +302,12 @@ def history():
         except ValueError:
             return jsonify({'entries': [], 'has_next': False, 'error': 'Invalid end date format'}), 400
 
-    # Filter by colormap if provided
+    # 🔹 4. FILTER BY COLORMAP
     if colormap_filter:
         colormap_list = colormap_filter.split(',')
         query = query.filter(Entry.colormap.in_(colormap_list))
 
-    # Apply sorting
+    # 🔹 5. SORTING OPTIONS
     if sort_by == 'recent':
         query = query.order_by(Entry.timestamp.desc())
     elif sort_by == 'oldest':
@@ -314,11 +315,11 @@ def history():
     elif sort_by == 'colormap':
         query = query.order_by(Entry.colormap)
 
-    # Paginate results
+    # 🔹 6. PAGINATION
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     entries = pagination.items
 
-    # Handle AJAX requests
+    # 🔹 7. AJAX RESPONSE
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         entries_data = [{
             'id': entry.id,
@@ -326,7 +327,7 @@ def history():
             'timestamp': entry.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             'is_favorite': entry.is_favorite,
             'image_data': entry.image_data,
-            'colormap': entry.colormap  # Ensure colormap is included in the response
+            'colormap': entry.colormap
         } for entry in entries]
 
         return jsonify({
@@ -335,14 +336,13 @@ def history():
             'current_page': pagination.page
         })
 
-    # Render template for normal page load
+    # 🔹 8. RENDER TEMPLATE
     return render_template('history.html',
                            title='History',
                            css_file='css/history.css',
                            current_page='history',
                            entries=entries,
                            username=current_user.username)
-
 
 
 @app.route('/toggle_favorite/<int:entry_id>', methods=['POST'])
@@ -507,45 +507,75 @@ def forget_password():
 
 
 
+
+
+
+
+
+
+
+
+
 # --------------------------------------------------------------------------------------------------------------------------------#
 # API ROUTES FOR TESTING 
 # --------------------------------------------------------------------------------------------------------------------------------#
-
 @app.route("/api/save", methods=["POST"])
 @login_required  # Ensure the user is logged in
-def save_letter_api():
+def save_text_api():
     data = request.json
-    letter = data.get("letter", "").strip().upper()  # Strip spaces and enforce uppercase
+    text = data.get("text", "").strip().upper()  # Ensure uppercase letters
     image_base64 = data.get("image")  # Base64 encoded image from frontend
+    colormap = data.get("cmap", "").strip()  # Receive the colormap
 
-     # Remove unnecessary surrounding quotes if they exist
-    if letter.startswith('"') and letter.endswith('"'):
-        letter = letter[1:-1]
-
-    if not letter or not letter.isalpha() or len(letter) != 1:
-        return jsonify({"success": False, "error": "Invalid input"}), 400
-
-    # Get the logged-in user ID
+    # Ensure user is authenticated
     user_id = current_user.id  
-
-    # Ensure user_id is not None
     if not user_id:
-        return jsonify({"success": False, "error": "User not authenticated"}), 403  # Forbidden
-    
+        return jsonify({"success": False, "error": "User not authenticated"}), 403  
+
+    #  Validate missing fields explicitly
+    if not text and not image_base64:
+        return jsonify({"success": False, "error": "Missing text or image data"}), 400
+    if not text:
+        return jsonify({"success": False, "error": "Missing Text"}), 400  # 🔹 Match exact expected test output
     if not image_base64:
         return jsonify({"success": False, "error": "No image data provided"}), 400
-  # Assuming a successful save logic here
+
+    #  Validate text length (🔹 NEW: Ensure text is not longer than 150 characters)
+    if len(text) > 150:
+        return jsonify({"success": False, "error": "Input exceeds 150-character limit"}), 400  # New validation for long input
+
+    # Input validation: Only letters & spaces allowed
+    if not all(char.isalpha() or char.isspace() for char in text):
+        return jsonify({"success": False, "error": "Invalid input"}), 400  # 🔹 Ensure "Invalid input" is returned for non-alpha characters
+
+    if not colormap:
+        return jsonify({"success": False, "error": "No colormap provided"}), 400
+
+    # Validate colormap
+    available_cmaps = plt.colormaps()
+    if colormap not in available_cmaps:
+        return jsonify({"success": False, "error": f"Invalid colormap. Choose from {available_cmaps}."}), 400
+
+    #  Strip unnecessary quotes
+    text = text.replace('"', '')
+
     try:
-        entry = Entry(user_id=user_id, letter=letter, image_data=image_base64)
-        db.session.add(entry)
+        # Save new entry in the database
+        new_entry = Entry(
+            user_id=user_id,
+            letter=text,  # Store full word/sentence
+            image_data=image_base64,  # Store Base64 image directly
+            colormap=colormap,
+            timestamp=datetime.utcnow()
+        )
+        db.session.add(new_entry)
         db.session.commit()
-        
-        # Return success response after saving
-        return jsonify({"success": True, "message": "Saved successfully!"}), 200
+
+        return jsonify({"success": True, "message": f'Text "{text}" saved successfully!'}), 200
 
     except Exception as e:
-        # Return error response if something goes wrong during save
-        return jsonify({"success": False, "error": f"Failed to save entry: {str(e)}"}), 500
+        return jsonify({"success": False, "error": str(e)}), 500  # 🔹 Fixed 5 → 500 status code for internal errors
+
 
 
 @app.route('/api/login', methods=['POST'])
@@ -691,7 +721,7 @@ def api_forget_password():
 
 
 @app.route('/api/generate_image', methods=['POST'])
-def proxy_generate():
+def api_generate_image():
     try:
         data = request.get_json()
         if not data or 'prompt' not in data:

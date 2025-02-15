@@ -5,7 +5,7 @@ import os
 # Add root directory to Python path so `pytest` can find `app.py`
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app import app as flask_app  # ✅ Correct import for Flask app in root
+from app import app as flask_app  #  Correct import for Flask app in root
 
 from application.models import User
 

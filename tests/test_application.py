@@ -17,22 +17,21 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from unittest.mock import patch
 
 
-
+# --------------------------------------------------------------------------------------------------------------------------#
 # Test to ensure @login_required works; Prevents unauthroised users access
+# --------------------------------------------------------------------------------------------------------------------------#
 def test_protected_route_requires_login(client):
     """Ensure protected routes are inaccessible without login."""
-    response = client.get('/history')  # Should redirect to login
+    response = client.get('/history')  # Not allowed
     assert response.status_code == 302  # Redirect
-    assert "/index" in response.location  # Redirects to login
+    assert "/index" in response.location  # Redirects 
 
 
 
-
-
-
-#---------------------------------------------------------------------------------------------#
+# --------------------------------------------------------------------------------------------------------------------------#
 # Consistency Testing of logging in with same user
 # This test is used to evaluate whether the login can return the same response for different kinds of user inputs across mutliple occurences
+# --------------------------------------------------------------------------------------------------------------------------#
 @pytest.mark.parametrize("credentials, expected_status, expected_message", [
     ({"username": "admin", "password": "1"}, 200, "Login successful"),  # Valid login
     ({"username": "admin", "password": "1"}, 200, "Login successful"),  # Same valid login
@@ -67,6 +66,7 @@ def test_api_login_consistency(client, credentials, expected_status, expected_me
 # --------------------------------------------------------------------------------------------------------------------------#
 #  Validity Testing of duplicate users registering 
 # This test is to check whether the regsiter form rejects duplicate usernames or emails and return appropriate error messages.
+# --------------------------------------------------------------------------------------------------------------------------#
 @pytest.mark.parametrize("payload, expected_error", [
     ({
         "username": "admin",  # Pre-existing username
@@ -93,6 +93,7 @@ def test_api_register(client,payload, expected_error):
 # -------------------------------------------------------------------------------------------------------------------------------------------------------#
 # Validity Testing for retrieval of history from database where user does not exist
 # Ensure that when provided with a non-existent user_id, return an appropriate error message and status code.
+# --------------------------------------------------------------------------------------------------------------------------#
 @pytest.mark.parametrize("user_id, expected_error, expected_status", [
     (999, "User not found", 404),  # Non-existent user ID
 ])
@@ -113,9 +114,9 @@ def test_get_user_history_expected_failures(client, user_id, expected_error, exp
     assert response_data["error"] == expected_error, f"Unexpected error message: {response_data['error']}"
 
 
-
+# --------------------------------------------------------------------------------------------------------------------------#
 # Test to check for valid email in forget password
-
+# --------------------------------------------------------------------------------------------------------------------------#
 @pytest.mark.parametrize("email, expected_status, success", [
     ("admin@gmail.com", 200, True),  #  Valid user - should return 200
     ("invalid@example.com", 404, False),  #  Invalid user - should return 404
@@ -134,8 +135,9 @@ def test_submit_email(client, email, expected_status, success):
         assert data["error"] == "Email not found"
 
 
-
+# --------------------------------------------------------------------------------------------------------------------------#
 # Test Password Reset functionality; Password must match
+# --------------------------------------------------------------------------------------------------------------------------#
 @pytest.mark.parametrize("new_password, confirm_password, expected_status, expected_response", [
     ("NewPass123!", "NewPass123!", 200, {"success": True, "message": "Password updated successfully!"}),  # Matching passwords
     ("NewPass123!", "WrongPass!", 400, {"success": False, "error": "Passwords must match"}),  #  Mismatched passwords
@@ -156,8 +158,9 @@ def test_password_reset(client, new_password, confirm_password, expected_status,
         assert response.get_json() == expected_response
 
  
-
+# --------------------------------------------------------------------------------------------------------------------------#
 # Test for invalid user reset password
+# --------------------------------------------------------------------------------------------------------------------------#
 def test_password_reset_invalid_user(client):
     """Test password reset for a user that does not exist."""
     response = client.post('/api/forget_password', json={

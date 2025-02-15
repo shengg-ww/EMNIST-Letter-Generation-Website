@@ -8,10 +8,17 @@
 
     <!-- Chatbox -->
     <div class="chatbox rounded shadow-sm w-100">
-        <div class="messages mb-4 p-3 text-center" id="chat-messages" style="height: 350px; overflow-y: auto;">
-            <h2 class="text-white image-title" id="prompt-display"></h2>
-            <div id="generated-images-container" class="d-flex flex-wrap justify-content-left"
-               ></div>
+    <div class="messages mb-4 text-center" id="chat-messages">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-white image-title" id="prompt-display"></h2>
+            </div>    
+            <div class="col-12">
+                     <div id="generated-images-container"  style="padding:20px"
+               ></div>  
+        </div>
+            </div>
+           
         </div>
 
         
@@ -19,35 +26,39 @@
     <div class="row ">
         <div class="col-6">
             <!-- Color Picker -->
-        <div class="mb-3 mt-3 text-center">
-            <label for="color-picker" class="text-white">Select Color Scheme:</label>
-            <select id="color-picker" class="form-control scrollable-dropdown w-auto mx-auto">
-                <option value="gray_r">Black (Default)</option>
-                <option value="gray">Inverse Background</option>
-                <option value="Blues">Blue</option>
-                <option value="Greens">Green</option>
-                <option value="Reds">Red</option>
-                <option value="Purples">Purple</option>
-                <option value="YlGnBu">Yellow-Blue</option>
-                <option value="twilight">Twilight</option>
-                <option value="inferno">Inferno</option>
-                <option value="magma">Magma</option>
-                <option value="plasma">Plasma</option>
-                <option value="viridis">Viridis</option>
-                <option value="cividis">Cividis</option>
-                <option value="Spectral">Spectral</option>
-                <option value="coolwarm">CoolWarm</option>
-                <option value="hsv">HSV</option>
-            </select>
-        </div>
-        </div>
-        <div class="col-6">
-              <!-- Save Image Button -->
-        <button id="save-button" class="btn btn-success mt-3" style="display: none; margin-bottom: 20px;">Save Image</button>
+            <div class="mb-3 mt-3 text-center">
+                <label id="color-picker-label" class="text-white">Select Color Scheme: Black (Default)</label>
+                <select id="color-picker" class="form-control scrollable-dropdown w-auto mx-auto">
+                    <option value="gray_r">Black (Default)</option>
+                    <option value="gray">Inverse Background</option>
+                    <option value="Blues">Blue</option>
+                    <option value="Greens">Green</option>
+                    <option value="Reds">Red</option>
+                    <option value="Purples">Purple</option>
+                    <option value="YlGnBu">Yellow-Blue</option>
+                    <option value="twilight">Twilight</option>
+                    <option value="inferno">Inferno</option>
+                    <option value="magma">Magma</option>
+                    <option value="plasma">Plasma</option>
+                    <option value="viridis">Viridis</option>
+                    <option value="cividis">Cividis</option>
+                    <option value="Spectral">Spectral</option>
+                    <option value="coolwarm">CoolWarm</option>
+                    <option value="hsv">HSV</option>
+                </select>
+            </div>
         </div>
         
-          </div>
-        <!-- Input Section -->
+        <div class="col-6">
+            <!-- Save Image Button -->
+            <button id="save-button" class="btn btn-success mt-3" style="display: none; margin-bottom: 20px;">Save Image</button>
+        </div>
+        
+        <!-- JavaScript for Updating Label & Storing Selection -->
+        <script>
+         
+        </script>
+
         <form id="input-form" class="d-flex">
             <input
                 type="text"
@@ -113,6 +124,7 @@
             transparent: true,
             opacity: 0.8,
             map: circleTexture,
+            color: new THREE.Color(0xA565E8),  // Change color here (white)
             depthTest: false,
             blending: THREE.AdditiveBlending,
         });
