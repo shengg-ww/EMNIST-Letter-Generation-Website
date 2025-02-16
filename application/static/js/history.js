@@ -28,20 +28,8 @@ flatpickr("#date-range", {
     }
 });
 
-// Function to display flash messages
-function showFlashMessage(message, type = 'success') {
-    const flashContainer = document.getElementById('flash-messages');
-    const flashMessage = document.createElement('div');
-    flashMessage.className = `flash-message flash-${type}`;
-    flashMessage.textContent = message;
 
-    flashContainer.appendChild(flashMessage);
 
-    // Remove the flash message after 3 seconds
-    setTimeout(() => {
-        flashMessage.remove();
-    }, 3000);
-}
 
 function toggleFavorite(entryId, form) {
     fetch(`/toggle_favorite/${entryId}`, {
@@ -57,19 +45,17 @@ function toggleFavorite(entryId, form) {
             if (data.is_favorite) {
                 starIcon.classList.remove('fa-regular');
                 starIcon.classList.add('fa-solid', 'favorited');
-                showFlashMessage('Added to favorites!');
+
             } else {
                 starIcon.classList.remove('fa-solid', 'favorited');
                 starIcon.classList.add('fa-regular');
-                showFlashMessage('Removed from favorites!', 'info');
+
             }
-        } else {
-            showFlashMessage('Failed to update favorite.', 'error');
-        }
+        } 
     })
     .catch(error => {
         console.error('Error toggling favorite:', error);
-        showFlashMessage('An error occurred while updating favorite.', 'error');
+
     });
 }
 

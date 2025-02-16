@@ -6,6 +6,7 @@ from flask_login import LoginManager, current_user, login_user, logout_user, log
 from flask_cors import CORS, cross_origin
 from PIL import Image, ImageOps
 from application import db
+from sqlalchemy import or_
 import numpy as np
 from werkzeug.security import check_password_hash, generate_password_hash
 import re
@@ -267,9 +268,6 @@ def save_text():
     
 
 
-
-from sqlalchemy import or_
-
 @app.route("/history", methods=['GET'])
 @login_required
 def history():
@@ -386,6 +384,7 @@ def remove_entry(entry_id):
 @app.route('/remove_all', methods=['POST'])
 @login_required
 def remove_all_entries():
+    
     user_entries = Entry.query.filter_by(user_id=current_user.id).all()
 
     if not user_entries:
