@@ -8,25 +8,10 @@ let debounceTimer;
 let activeSearchLetters = '';
 let activeSortBy = 'recent';
 let activeFavorites = false;
-let activeStartDate = '';
-let activeEndDate = '';
+
 let activeColormaps = [];  // New variable to store selected colormaps
 
-// Initialize Flatpickr Date Range Picker
-flatpickr("#date-range", {
-    mode: "range",
-    dateFormat: "Y-m-d",
-    onChange: (selectedDates) => {
-        if (selectedDates.length === 2) {
-            activeStartDate = selectedDates[0].toISOString().split('T')[0];
-            activeEndDate = selectedDates[1].toISOString().split('T')[0];
-        } else {
-            activeStartDate = '';
-            activeEndDate = '';
-        }
-        resetAndLoadEntries();  // Reload entries with new date range
-    }
-});
+
 
 
 
@@ -128,9 +113,7 @@ function loadEntries(page) {
     if (activeSearchLetters) url += `&search=${encodeURIComponent(activeSearchLetters)}`;  // Match Flask filter name
 
     if (activeFavorites) url += `&favorites=true`;
-    if (activeStartDate && activeEndDate) {
-        url += `&start_date=${activeStartDate}&end_date=${activeEndDate}`;
-    }
+
     if (activeColormaps.length > 0) url += `&colormaps=${activeColormaps.join(',')}`;
 
     fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
@@ -274,8 +257,7 @@ document.getElementById('reset-filters').addEventListener('click', () => {
     activeSearchLetters = '';
     activeSortBy = 'recent';
     activeFavorites = false;
-    activeStartDate = '';
-    activeEndDate = '';
+  
 
     // Uncheck all colormap checkboxes
     document.querySelectorAll("#colormap-filter input[type='checkbox']").forEach(checkbox => {

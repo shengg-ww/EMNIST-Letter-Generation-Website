@@ -30,7 +30,7 @@
                 <label id="color-picker-label" class="text-white">Select Color Scheme: Black (Default)</label>
                 <select id="color-picker" class="form-control scrollable-dropdown w-auto mx-auto">
                     <option value="gray_r">Black (Default)</option>
-                    <option value="gray">Inverse Background</option>
+                    <option value="gray">White</option>
                     <option value="Blues">Blue</option>
                     <option value="Greens">Green</option>
                     <option value="Reds">Red</option>
@@ -54,10 +54,6 @@
             <button id="save-button" class="btn btn-success mt-3" style="display: none; margin-bottom: 20px;">Save Image</button>
         </div>
         
-        <!-- JavaScript for Updating Label & Storing Selection -->
-        <script>
-         
-        </script>
 
         <form id="input-form" class="d-flex mb-5">
             <input
@@ -124,7 +120,7 @@
             transparent: true,
             opacity: 0.8,
             map: circleTexture,
-            color: new THREE.Color(0xA565E8),  // Change color here (white)
+            color: new THREE.Color(0xA565E8),  // Change color here
             depthTest: false,
             blending: THREE.AdditiveBlending,
         });
