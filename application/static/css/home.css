@@ -23,7 +23,11 @@ overflow:hidden;
     font-size: 4.5rem
 }
 
-  
+    .navbar-nav .nav-link.active {
+    font-weight: bold;
+    color: #b38ad0  !important ;
+    border:3px solid#b38ad0  !important 
+}
 .navbar-brand {
     color:white;
     padding:10px;

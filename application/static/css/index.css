@@ -44,7 +44,11 @@ font-size:1.5rem;
 
 margin-top:50px;
 }
-
+.navbar-nav .nav-link.active {
+    font-weight: bold;
+    color: #b38ad0  !important ;
+    border:3px solid#b38ad0  !important 
+}
 
 .home-subtitle, .home-title,.start-button,.generate-button,.history-button{
     animation: fadeIn 2s ease-in-out;

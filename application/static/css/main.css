@@ -361,7 +361,11 @@ font-size:3rem;
   color: rgba(255, 255, 255, 0.5); /* Placeholder text color */
 }
 
-
+.navbar-nav .nav-link.active {
+  font-weight: bold;
+  color: #b38ad0  !important ;
+  border:3px solid#b38ad0  !important 
+}
 
 .chatbox button{
   background: transparent;
