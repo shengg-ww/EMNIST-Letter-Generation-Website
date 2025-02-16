@@ -189,7 +189,7 @@ function loadEntries(page) {
         });
 }
 
-// ✅ **Fix for Read More Button using Event Delegation**
+//  **Fix for Read More Button using Event Delegation**
 document.addEventListener("click", function (event) {
     if (event.target.classList.contains("read-more-btn")) {
         const button = event.target;
@@ -263,7 +263,7 @@ document.getElementById('reset-filters').addEventListener('click', () => {
         checkbox.checked = false;
     });
     
-    // ✅ Reset activeColormaps correctly
+    // Reset activeColormaps correctly
     activeColormaps = []; 
 
     // Reload the entries with the default filters

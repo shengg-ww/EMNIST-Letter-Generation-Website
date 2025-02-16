@@ -15,7 +15,7 @@ from flask import url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 from unittest.mock import patch
 
-# Test for generation image words
+# Validity Test for generation image words
 @pytest.mark.parametrize("prompt, cmap, expected_status, expected_response", [
     ("A", "gray_r", 200, {"success": True}),  #  Valid single letter
     ("HELLO", "viridis", 200, {"success": True}),  #  Valid multi-letter input

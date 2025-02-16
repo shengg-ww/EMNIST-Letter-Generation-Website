@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 
 
 # ------------------------------------------------------------------------#
-# Test 1: Validity Test of Tensorflow Server
+# Validity Test of Tensorflow Server
 
 # Base URL of TensorFlow server
 BASE_URL = "https://ca2-daaa2b02-2309123-limshengwei.onrender.com/v1/models/saved_cgan:predict"
@@ -49,7 +49,7 @@ def test_model_prediction(prompt):
     print(f"Prediction Output for class '{prompt}':", result["predictions"])
 
 # ------------------------------------------------------------------------#
-# Test 2: Validity Test for Invalid Entry for Tensorflow Server
+# Validity Test for Invalid Entry for Tensorflow Server
 @pytest.mark.parametrize("invalid_payload", [
     # Missing 'input_12' (class index)
     {

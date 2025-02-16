@@ -274,7 +274,7 @@ def history():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     sort_by = request.args.get('sort_by', 'recent')
-    search_query = request.args.get('search', '').strip().lower()  # ✅ Case insensitive search
+    search_query = request.args.get('search', '').strip().lower()  # Case insensitive search
     show_favorites = request.args.get('favorites', 'false').lower() == 'true'
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
@@ -423,14 +423,6 @@ def profile():
 
     # Calculate favorite percentage
     favorite_percentage = (total_favorites / total_predictions) * 100 if total_predictions > 0 else 0
-
-    # Query to get most and least predicted letters in one go
-    letter_counts = db.session.query(
-        Entry.letter, func.count(Entry.letter).label('count')
-    ).filter_by(user_id=user_id).group_by(Entry.letter).order_by(desc('count')).all()
-
-    most_predicted_letter = letter_counts[0][0] if letter_counts else 'N/A'
-    least_predicted_letter = letter_counts[-1][0] if letter_counts else 'N/A'
 
         # Query to find both most and least common colormap in one go
     colormap_counts = db.session.query(

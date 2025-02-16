@@ -135,7 +135,7 @@ overflow:hidden;
 
 
 
-  /* 📱 Standard Mobile Devices (Most smartphones) */
+
 @media (max-width: 768px) {
 .home-title {
     font-size: 2rem;
@@ -166,7 +166,7 @@ overflow:hidden;
 }
 }
 
-/* 📱 iPads & Tablets (Standard 10-inch tablets) */
+
 @media (max-width: 1024px) {
 .home-title {
     font-size: 2.5rem;
@@ -190,7 +190,7 @@ overflow:hidden;
 }
 }
 
-/* 💻 iPad Pro & Large Tablets (12-inch tablets, small desktops) */
+
 @media (max-width: 1200px) {
 .home-title {
     font-size: 3rem;

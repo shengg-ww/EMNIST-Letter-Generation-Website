@@ -86,7 +86,7 @@ def test_api_save_letter(client, text, image_data, expected_status, expected_res
         session['_user_id'] = 1  # Mock user ID
     
     payload = {
-        "text": text,  # 🔹 FIXED: Change from "letter" to "text"
+        "text": text,  # 
         "image": image_data
     }
 

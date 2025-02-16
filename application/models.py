@@ -29,6 +29,6 @@ class Entry(db.Model):
 
     @validates('letter')
     def validate_letter(self, key, value):
-        if not value.replace(" ", "").isalpha():  # ✅ Allow only letters & spaces
+        if not value.replace(" ", "").isalpha():  #  Allow only letters & spaces
             raise ValueError("Letter must contain only alphabets (A-Z) and spaces")
         return value
