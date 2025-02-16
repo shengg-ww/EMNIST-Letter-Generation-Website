@@ -67,6 +67,12 @@ def login():
 
         # Check if the user exists and the password is correct
         if user and check_password_hash(user.password, password):
+            payload = {
+                "signature_name": "serving_default",
+                "instances": [{"input_13":  np.random.normal(0, 1, 100).tolist(), "input_12": [0.0]}]
+            }
+
+            response = requests.post(GAN_SERVER_URL, json=payload)
             login_user(user)  # Log the user in
             flash("Login successful!", "success")
       
