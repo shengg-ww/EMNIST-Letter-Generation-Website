@@ -252,18 +252,19 @@ document.getElementById('reset-filters').addEventListener('click', () => {
     document.getElementById('search-letters').value = '';
     document.getElementById('sort-by').value = 'recent';
     document.getElementById('show-favorites').checked = false;
-    document.getElementById('date-range').value = '';
-    
+
+
     activeSearchLetters = '';
     activeSortBy = 'recent';
     activeFavorites = false;
-  
 
-    // Uncheck all colormap checkboxes
+    // Uncheck all colormap checkboxes and reset the activeColormaps array
     document.querySelectorAll("#colormap-filter input[type='checkbox']").forEach(checkbox => {
         checkbox.checked = false;
     });
-    activeColormaps = [];
+    
+    // ✅ Reset activeColormaps correctly
+    activeColormaps = []; 
 
     // Reload the entries with the default filters
     resetAndLoadEntries();
