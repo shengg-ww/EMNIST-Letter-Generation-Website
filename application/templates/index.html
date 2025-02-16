@@ -7,9 +7,9 @@
     
     <div class="row flex-grow-1 h-100 w-100">
         <!-- Left Section (Typing Title) -->
-        <div class="col-sm-12 col-md-6 d-flex flex-column align-items-start justify-content-center px-5">
+        <div class="col-sm-12 col-md-6 d-flex flex-column align-items-center justify-content-center px-5 mb-5">
             <h1 class="home-title">Image Generation</h1>
-            <p class="home-subtitle typing-text" id="typing-title"></p>
+            <p class="home-subtitle typing-text align-items-start" id="typing-title"></p>
             <!-- Get Started Button -->
             <div>
                 <button class="btn btn-lg mt-3 ms-5 start-button" onclick="location.href='/login'">Get Started</button>
@@ -51,37 +51,60 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const titleElement = document.getElementById('typing-title');
-        typeWriter(titleElement, "Generate AI-generated handwriting with deep learning");
         initWaveBackground(); // Initialize the wave background animation
         initThreeJS(); // Initialize the main 3D content after the background is ready
-    });
 
+  // Array of different subtitles
+  const subtitles = [ 
+    "Your words, your style, your color.",
+    "Real-time AI handwriting.",
+    "Instant. Adaptive. Unique.",
+    "28x28 deep learning synthesis.",
+    "Type anything, not just a letter.",
+    "Pick your colors. Make it yours.",
+   
+];
+
+    
+    let index = 0; // Track the current text index
+    
+    function cycleText() {
+        typeWriter(titleElement, subtitles[index], 75, false, () => {
+            setTimeout(() => {
+                typeWriter(titleElement, subtitles[index], 50, true, () => {
+                    // Move to the next subtitle after deleting
+                    index = (index + 1) % subtitles.length;
+                    setTimeout(cycleText, 1000); // Pause before next cycle
+                });
+            }, 2000); // Pause before deleting
+        });
+    }
+    
+    cycleText(); // Start cycling the text
+    });
     // ========================
     // Typewriter Effect for Title
     // ========================
-    function typeWriter(element, text, speed = 75, isUntyping = false) {
-        let i = isUntyping ? text.length : 0;
-        
-        function type() {
-            if (isUntyping ? i > 0 : i < text.length) {
-                if (isUntyping) {
-                    element.innerHTML = text.substring(0, i - 1);
-                    i--;
-                } else {
-                    element.innerHTML += text.charAt(i);
-                    i++;
-                }
-                setTimeout(type, speed);
+    function typeWriter(element, text, speed = 75, isUntyping = false, callback = null) {
+    let i = isUntyping ? text.length : 0;
+    
+    function type() {
+        if (isUntyping ? i > 0 : i < text.length) {
+            if (isUntyping) {
+                element.innerHTML = text.substring(0, i - 1);
+                i--;
             } else {
-                // Switch between typing and untyping
-                setTimeout(() => {
-                    typeWriter(element, text, speed, !isUntyping);
-                }, 2000); // Pause before switching
+                element.innerHTML += text.charAt(i);
+                i++;
             }
+            setTimeout(type, speed);
+        } else {
+            if (callback) callback(); // Call the next step after typing/untype
         }
-        
-        type();
     }
+    
+    type();
+}
 
     // ========================
     // Wave Background Animation using Three.js

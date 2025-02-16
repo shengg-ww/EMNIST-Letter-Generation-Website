@@ -134,7 +134,7 @@ def logout():
 def home():
     # Get the username of the logged-in user
     username = current_user.username
-    return render_template("home.html",title='Home', css_file='css/main.css', current_page="home", username=username)
+    return render_template("home.html",title='Home', css_file='css/home.css', current_page="home", username=username)
 
 @app.route('/generate', methods=['GET'])
 @login_required

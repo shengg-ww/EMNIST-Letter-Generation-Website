@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return; // Stop execution if elements are missing
     }
 
-    const GAN_PROXY_URL = "http://127.0.0.1:5000/generate_image"; // Ensure it targets the correct backend route
+    const GAN_PROXY_URL = "https://web-service-ca2-daaa2b02-2309123.onrender.com/generate_image"; 
     let debounceTimer = null; // Prevent API spam
     let generatedImages = {}; // Store generated images { "A": base64Image, "B": base64Image, " ": blankImage }
 

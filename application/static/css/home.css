@@ -1,0 +1,253 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+
+body{
+background:black;
+font-family: 'Inter', sans-serif;
+overflow:hidden;
+
+}
+.home-subtitle {
+    font-size: 1.1rem;
+    text-align: center;
+    color:#cdcdcd;
+    padding:10px;
+    margin-left:50px;
+    font-size:1.5rem;
+    margin-top:40px;
+}
+.home-title{
+    color:white;
+    margin-left:50px;
+    font-weight: bold;
+    font-size: 4.5rem
+}
+
+  
+.navbar-brand {
+    color:white;
+    padding:10px;
+    text-shadow: 4px 4px 4px rgb(234, 86, 22); /* Red shadow with offsets and blur */
+}
+/* User Icon Styling */
+.user-icon {
+    font-size: 1.8rem;
+    color: #ffffff;
+    transition: color 0.3s ease;
+  }
+  
+  /* Change color on hover */
+  .nav-link:hover .user-icon {
+    color: #00bfff;  /* Light blue on hover */
+  }
+  
+  /* Username Styling */
+  .username {
+    font-size: 1rem;
+    color: #ffffff;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+  .history-button,.generate-button{
+    background: transparent;
+    color:white;
+    margin-left: 50px;
+    border-radius: 30px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.75); /* Focus glow */
+    border: 5px solid #ffffff; /* Blue border */
+    position:relative;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    transition: all 0.3s ease-in-out;
+  }
+  .history-button:hover,.generate-button:hover {
+    background: #f8f8f8; /* Solid blue on hover */
+    border: 5px solid #ffffff; /* Blue border */
+    color: black;
+    transform: scale(1.02); /* Slight hover effect */
+  } 
+  
+  
+  /* Change username color on hover */
+  .nav-link:hover .username {
+    color: #00bfff;  /* Light blue on hover */
+  }
+  .home-subtitle, .home-title,.start-button,.generate-button,.history-button{
+    animation: fadeIn 2s ease-in-out;
+  }
+
+.navbar .nav-link {
+    color: #fff;
+    border: 2px solid white;
+    border-radius: 50px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    margin:10px;
+}
+
+.navbar .nav-link:hover {
+    background-color: #fff;
+    color: #000;
+    text-decoration: none;
+}
+
+
+#threejs-background {
+    position: fixed; /* Fix the position to cover the background */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1; /* Ensure it stays in the background */
+}
+#threejs-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: black;
+    overflow: hidden;
+}
+
+
+.home-subtitle, .home-title,.start-button,.generate-button,.history-button{
+    animation: fadeIn 2s ease-in-out;
+  }
+  @keyframes fadeIn {
+      from {
+          opacity: 0;
+          transform: translateY(20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }  
+
+
+
+
+
+
+
+
+
+  /* 📱 Standard Mobile Devices (Most smartphones) */
+@media (max-width: 768px) {
+.home-title {
+    font-size: 2rem;
+    text-align: center;
+}
+
+.home-subtitle {
+    font-size: 1.1rem;
+    text-align: center;
+    color:#cdcdcd;
+    margin-left:50px;
+    margin-bottom:100px;
+    font-size:1.5rem;
+    margin-top:30px;
+}
+
+.generate-button, .history-button {
+    font-size: 0.9rem;
+    padding: 10px 16px;
+    width: 100%;
+    display: block;
+    margin-bottom: 10px;
+}
+
+#threejs-container {
+    max-width: 300px;
+    max-height: 300px;
+}
+}
+
+/* 📱 iPads & Tablets (Standard 10-inch tablets) */
+@media (max-width: 1024px) {
+.home-title {
+    font-size: 2.5rem;
+    text-align: center;
+}
+
+.home-subtitle {
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.generate-button, .history-button {
+    font-size: 1rem;
+    padding: 12px 18px;
+    width: auto;
+}
+
+#threejs-container {
+    max-width: 350px;
+    max-height: 350px;
+}
+}
+
+/* 💻 iPad Pro & Large Tablets (12-inch tablets, small desktops) */
+@media (max-width: 1200px) {
+.home-title {
+    font-size: 3rem;
+}
+
+
+
+.generate-button, .history-button {
+    font-size: 1.1rem;
+    padding: 14px 20px;
+}
+
+#threejs-container {
+    max-width: 400px;
+    max-height: 400px;
+}
+}
+
+.flash-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f8d7da; /* Light red for error */
+    color: #721c24; /* Dark red text */
+    padding: 20px;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000; /* Ensure it appears on top */
+    text-align: center;
+    max-width: 400px;
+  }
+  
+  .flash-message.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+  
+  .flash-message.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+  }
+  
+  .dismiss-btn {
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  
+  .dismiss-btn:hover {
+    background-color: #0056b3;
+  }
+  
+
+.fixed-bottom{
+  color:rgb(160, 160, 160)
+}

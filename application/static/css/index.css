@@ -3,6 +3,7 @@ body {
     background:black;
     font-family: 'Inter', sans-serif;
     height: 100%;
+    overflow:hidden
 
   }
   
@@ -15,44 +16,50 @@ body {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.75); /* Focus glow */
     border: 5px solid #ffffff; /* Blue border */
-    margin-top: 50px;
+    margin-top: 80px;
     position:relative;
     padding: 15px 30px;
     font-size: 1.2rem;
     transition: all 0.3s ease-in-out;
   }
   
-  @keyframes blob-animation {
-      0%, 100% {
-          border-radius: 50%;
-          transform: translate(0, 0) scale(1);
-      }
-      25% {
-          border-radius: 60% 40% 70% 30% / 30% 70% 40% 60%;
-          transform: translate(10px, -20px) scale(1.1);
-      }
-      50% {
-          border-radius: 40% 60% 30% 70% / 60% 30% 70% 40%;
-          transform: translate(-15px, 10px) scale(1.2);
-      }
-      75% {
-          border-radius: 70% 30% 50% 50% / 50% 50% 30% 70%;
-          transform: translate(20px, -10px) scale(1.1);
-      }
+  .home-title{
+    color:white;
+    font-weight: bold;
+    font-size: 4.5rem;
+
+}
+
+.home-subtitle, .home-title {
+    position: relative;
+    bottom: 80px;
+    left: 50px;
+}
+
+
+.home-subtitle{
+color:#cdcdcd;
+
+font-size:1.5rem;
+
+margin-top:50px;
+}
+
+
+.home-subtitle, .home-title,.start-button,.generate-button,.history-button{
+    animation: fadeIn 2s ease-in-out;
   }
-  
-  /* Gradient Animation */
-  @keyframes gradient-animation {
-    0% {
-        background-position: 0% 50%; /* Start at the left */
-    }
-    50% {
-        background-position: 100% 50%; /* Shift to the right */
-    }
-    100% {
-        background-position: 0% 50%; /* Return to the start */
-    }
-  }
+  @keyframes fadeIn {
+      from {
+          opacity: 0;
+          transform: translateY(20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }  
+
   
   @media (max-width: 768px) {
       .home-title {
@@ -75,42 +82,9 @@ body {
           height: 200px;
       }
   }
-  .home-subtitle, .home-title,.start-button,.generate-button,.history-button{
-    animation: fadeIn 2s ease-in-out;
-  }
-  @keyframes fadeIn {
-      from {
-          opacity: 0;
-          transform: translateY(20px);
-      }
-      to {
-          opacity: 1;
-          transform: translateY(0);
-      }
-  }  
-  .home-subtitle, .home-title{
-      position: relative;
-      bottom:80px;
-      left:50px;
-  }
-  
-  
-  
-  .home-title{
-      color:white;
-      font-weight: bold;
-      font-size: 4.5rem
-  }
 
 
 
-  .home-subtitle{
-  color:#cdcdcd;
-  padding:10px;
-  font-size:1.5rem;
-  margin-top:30px;
-  }
-  
   
   .navbar-brand {
       color:white;
@@ -120,13 +94,16 @@ body {
   
   
   
-  .start-button:hover {
-      background: #f8f8f8; /* Solid blue on hover */
-      border: 5px solid #ffffff; /* Blue border */
   
-      color: black;
-      transform: scale(1.05); /* Slight hover effect */
-  }
+  .start-button:hover {
+    background: #f8f8f8; /* Solid blue on hover */
+    border: 5px solid #ffffff; /* Blue border */
+
+    color: black;
+    transform: scale(1.05); /* Slight hover effect */
+}
+
+
   
   .navbar .nav-link {
       color: #fff;
